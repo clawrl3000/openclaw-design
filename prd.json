@@ -1,0 +1,381 @@
+{
+  "project": "OpenClaw Marketplace",
+  "branchName": "ralph/openclaw-marketplace",
+  "description": "Premium skill marketplace at openclaw.design — browse, purchase, and download OpenClaw skill bundles via Stripe.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Project scaffold and dev environment",
+      "description": "As a developer, I need a Next.js 15 app with Tailwind, HeroUI, and Drizzle ORM configured so we can build features incrementally.",
+      "acceptanceCriteria": [
+        "Next.js 15 App Router project with TypeScript in root",
+        "Tailwind CSS + HeroUI (heroui.com, formerly NextUI) initialized via npx heroui-cli@latest init",
+        "Geist Mono + Geist Sans fonts configured (next/font/google or local) as primary typography",
+        "Drizzle ORM configured with Postgres connection (Neon or Vercel Postgres)",
+        "Environment variables documented in .env.example (DATABASE_URL, etc.)",
+        "npm run dev runs local server; npm run build succeeds",
+        "Typecheck/lint passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Database schema — skills, users, purchases, reviews",
+      "description": "As a developer, I need the core database tables so the app can store skills, user accounts, purchases, and reviews.",
+      "acceptanceCriteria": [
+        "skills table: id, slug (unique), name, tagline, description (text), price_cents (int), currency, hero_image_url, category, published (boolean), created_at, updated_at",
+        "skill_versions table: id, skill_id (FK), version, changelog (text), bundle_url, created_at",
+        "users table: id, email (unique), name, avatar_url, stripe_customer_id, role (user/admin), created_at",
+        "purchases table: id, user_id (FK), skill_id (FK), skill_version_id (FK), stripe_payment_intent_id, amount_cents, currency, status, purchased_at",
+        "reviews table: id, user_id (FK), skill_id (FK), rating (1-5), body (text), created_at",
+        "Drizzle migrations generate and run successfully",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Authentication — NextAuth.js setup with GitHub OAuth",
+      "description": "As a developer, I need NextAuth.js v5 configured with GitHub OAuth so users can create accounts and sign in.",
+      "acceptanceCriteria": [
+        "NextAuth.js v5 (Auth.js) installed and configured in app",
+        "GitHub OAuth provider configured (client ID/secret in env vars)",
+        "Email/password credentials provider as fallback",
+        "Session strategy working (JWT or database sessions)",
+        "User record created in users table on first login",
+        "Auth environment variables documented in .env.example",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Sign in and sign up UI pages",
+      "description": "As a user, I want clean sign-in and sign-up pages so I can create an account and log in.",
+      "acceptanceCriteria": [
+        "Sign in page at /auth/signin with centered card on dark background",
+        "Sign in with GitHub button (prominent, with GitHub icon)",
+        "Divider with 'or continue with email'",
+        "Email + password input fields with Sign In button",
+        "Sign up link below the form",
+        "Protected routes redirect to /auth/signin when not authenticated",
+        "Signed-in users see avatar/name in nav instead of Sign In link",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Admin — create and list skills",
+      "description": "As an admin, I need to create skills and see them in a list so I can populate the catalog.",
+      "acceptanceCriteria": [
+        "Admin route at /admin/skills protected by admin role check (non-admins get 403)",
+        "List view showing all skills: name, slug, category, price, published status",
+        "Create skill form: name, slug, tagline, description (textarea), price (dollars input converted to cents), category dropdown, hero image URL",
+        "Submitting form creates skill record in database",
+        "New skills default to published: false (draft)",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Admin — edit skill, publish/unpublish, upload versions",
+      "description": "As an admin, I need to edit skills, toggle publish status, and upload new versions with bundles.",
+      "acceptanceCriteria": [
+        "Edit skill page at /admin/skills/[id]/edit with pre-filled form",
+        "All skill fields editable (name, tagline, description, price, category, hero image URL)",
+        "Publish/unpublish toggle button that updates the published field",
+        "Upload new version form: version string, changelog text, bundle zip URL",
+        "Version record created in skill_versions table",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Skill catalog — browse page with grid of skill cards",
+      "description": "As a visitor, I want to browse available skills on the homepage in a visually rich grid.",
+      "acceptanceCriteria": [
+        "Homepage at / displays a grid of published skill cards",
+        "Each card shows: hero image (large, 60%+ of card), skill name, tagline, price badge, category tag",
+        "Cards have hover effect (subtle scale + border glow)",
+        "Responsive grid: 3 columns desktop, 2 tablet, 1 mobile",
+        "Cards link to /skills/[slug]",
+        "Navigation bar: lobster claw icon + OpenClaw wordmark, search bar, Browse Skills, sign in/avatar (sticky, blur background like openclaw.ai)",
+        "Hero banner with animated ASCII art claw background: large lobster claw made of ASCII characters (5-10% opacity), rendered in whatever monospace font looks best for the art, subtly drifts/rotates via CSS animation, positioned behind hero text",
+        "Hero headline: Premium Skills for Your AI Agent, subtext, Browse Marketplace CTA",
+        "Dark theme matching openclaw.ai aesthetic (deep navy/charcoal, not pure black)",
+        "SEO meta tags on homepage (title, description, Open Graph)",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Skill catalog — filtering by category and sorting",
+      "description": "As a visitor, I want to filter skills by category and sort them so I can find what I need.",
+      "acceptanceCriteria": [
+        "Category filter (top bar or sidebar) with options: All, Productivity, Communication, Development, Media, Automation, Smart Home",
+        "Sort dropdown: Newest, Price Low-High, Price High-Low, Highest Rated",
+        "Filters and sort persist in URL search params",
+        "Grid updates without full page reload",
+        "Empty state message when no skills match the filter",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Skill detail page — hero, about, and sidebar",
+      "description": "As a visitor, I want to see a skill's detail page with hero image, description, and purchase info.",
+      "acceptanceCriteria": [
+        "Dynamic route at /skills/[slug] that loads skill from database by slug",
+        "Hero section: large image with gradient overlay, skill name, tagline, price, Buy Now button",
+        "About section: full description rendered as rich text (markdown or HTML)",
+        "Sticky sidebar (desktop): price, Buy Now button, current version, category, install instructions preview",
+        "SSR with dynamic metadata for SEO (title, description, Open Graph image)",
+        "404 page if slug not found",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Skill detail page — how it works, creator story, changelog",
+      "description": "As a visitor, I want to see how a skill works, who made it, and its version history before buying.",
+      "acceptanceCriteria": [
+        "How It Works section on detail page: numbered steps with icons or placeholder images",
+        "Creator Story section: narrative text with author name and avatar",
+        "Changelog section: list of versions with dates and release notes from skill_versions table",
+        "Related Skills section at bottom: 3-4 skill cards from same category",
+        "Sections render below the About section or as tabs",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Stripe checkout integration",
+      "description": "As a user, I want to buy a skill with my credit card via Stripe so I can download and use it.",
+      "acceptanceCriteria": [
+        "Buy Now button creates a Stripe Checkout session via server action",
+        "Session includes skill name, price, and metadata (skill_id, user_id)",
+        "User redirected to Stripe-hosted checkout page",
+        "Success URL: /purchases/[id]/success",
+        "Cancel URL: back to skill detail page",
+        "Stripe webhook handler at /api/webhooks/stripe",
+        "On checkout.session.completed: create purchase record in database, link to user and skill",
+        "Stripe customer created or linked on first purchase",
+        "Webhook events handled idempotently (duplicate events don't create duplicate purchases)",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-012",
+      "title": "Skill bundle delivery and download",
+      "description": "As a buyer, I want to download my purchased skill bundle so I can install it in my OpenClaw instance.",
+      "acceptanceCriteria": [
+        "Purchase success page at /purchases/[id]/success shows confirmation with animated checkmark",
+        "SKILL.md content revealed inline on the success page (rendered markdown) with Copy to Clipboard button",
+        "Download .md button for single-file skills, Download zip button for multi-file bundles",
+        "Download endpoint generates a signed, time-limited URL (1 hour) for the bundle",
+        "Only the purchasing user can access the download (auth check on user_id)",
+        "Success page shows What's next 3-step install instructions: 1) Download/copy 2) Place in skills/ folder 3) Restart OpenClaw",
+        "Confirmation email sent via Resend with download link after purchase",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-013",
+      "title": "User dashboard — purchases and re-downloads",
+      "description": "As a logged-in user, I want to see my purchase history and re-download any skill I've bought.",
+      "acceptanceCriteria": [
+        "Protected route at /dashboard",
+        "Welcome header with user avatar and name",
+        "My Purchases list: skill thumbnail, name, purchase date, version, price paid, download button, copy SKILL.md button",
+        "Re-download button generates a fresh signed URL for the bundle",
+        "View Receipt link (Stripe-hosted receipt URL stored from webhook)",
+        "Empty state with friendly message and Browse Skills CTA when no purchases",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-014",
+      "title": "Reviews and ratings",
+      "description": "As a buyer, I want to leave a review so other users can see if a skill is worth buying.",
+      "acceptanceCriteria": [
+        "Review form on skill detail page (only visible to users who purchased the skill)",
+        "Star rating input (1-5) + text body textarea",
+        "One review per user per skill enforced (can edit existing review, not create duplicate)",
+        "Average rating and review count displayed on skill detail page hero",
+        "Average rating displayed on skill cards in the browse grid",
+        "Reviews list on detail page sorted by most recent",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-015",
+      "title": "SEO, sitemap, and marketing pages",
+      "description": "As a visitor, I want the site to look professional and rank well on search engines.",
+      "acceptanceCriteria": [
+        "Dynamic sitemap.xml at /sitemap.xml listing all published skill pages",
+        "robots.txt at /robots.txt allowing crawlers",
+        "Open Graph + Twitter card meta tags on all pages",
+        "Structured data (JSON-LD Product schema) on skill detail pages",
+        "About page at /about: what is OpenClaw Marketplace, who makes it, why premium skills",
+        "Clean branded 404 page with link back to homepage",
+        "Footer on all pages: links to About, GitHub, Discord, Terms, Privacy",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-016",
+      "title": "Google Stitch design prompt and design folder",
+      "description": "As a designer, I need the Google Stitch prompt saved so we can generate visual designs for the marketplace.",
+      "acceptanceCriteria": [
+        "design/ directory created at project root",
+        "design/stitch-prompt.md contains the full Google Stitch prompt covering: homepage, skill detail, checkout success, dashboard, sign in, about, admin pages",
+        "Prompt references openclaw.ai as the aesthetic north star and includes animated background claw specification",
+        "Prompt specifies color palette, typography, spacing, card styles, imagery direction, and testimonial wall",
+        "Prompt references openclaw.design domain, dark theme matching openclaw.ai, and lobster/claw branding",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-017",
+      "title": "Skill search with preloaded suggestions",
+      "description": "As a visitor, I want to search for skills by keyword so I can quickly find what I need.",
+      "acceptanceCriteria": [
+        "Search bar in navigation accepts text input and searches skill names, taglines, and descriptions",
+        "Search results appear as a dropdown below the search bar as user types (debounced, 300ms)",
+        "Preloaded/popular suggestions shown when search bar is focused but empty (e.g. top 5 skills, trending categories)",
+        "Pressing Enter or clicking a result navigates to the skill detail page",
+        "Empty state: 'No skills found' message with link to browse all",
+        "Search query preserved in URL params (/skills?q=weather) for shareable links",
+        "Server-side search query against database (ILIKE or full-text search)",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-018",
+      "title": "Legal pages — Terms, Privacy, Refund Policy",
+      "description": "As a marketplace operator, I need legal pages so we can process payments through Stripe and comply with regulations.",
+      "acceptanceCriteria": [
+        "Terms of Service page at /terms covering: account creation, purchasing, license to use purchased skills, prohibited uses, limitation of liability",
+        "Privacy Policy page at /privacy covering: data collected (email, payment info via Stripe), cookies, third-party services (Stripe, GitHub OAuth, Resend, Vercel Analytics)",
+        "Refund Policy page at /refunds covering: digital goods policy, when refunds are granted, how to request a refund",
+        "Gambling/betting skill disclaimer: legal language noting that skills related to gambling or betting are tools only, marketplace is not responsible for how they are used, user assumes all risk, must comply with local laws",
+        "All legal pages use clean readable typography, dark theme consistent with rest of site",
+        "Footer links to all three legal pages on every page",
+        "Typecheck/lint passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "One of our skills involves gambling/sports betting — legal language must cover this explicitly with proper disclaimers"
+    },
+    {
+      "id": "US-019",
+      "title": "Seed content — launch skills with descriptions and bundles",
+      "description": "As a marketplace operator, I need at least 3-5 skills populated in the database with full content so the store isn't empty at launch.",
+      "acceptanceCriteria": [
+        "Database seed script or admin-created entries for at least 5 launch skills",
+        "Each skill has: name, tagline, full description, category, price, hero image URL, at least one version with a SKILL.md bundle",
+        "Each skill has a How It Works section and Creator Story written",
+        "Skills span at least 3 different categories to demonstrate filtering",
+        "At least one skill has a gambling/betting use case with appropriate description and disclaimers",
+        "Seed data can be run via a script (e.g. npm run seed) or created through admin UI",
+        "Typecheck passes"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": "Template for skill content: name, tagline, description (markdown), how-it-works steps, creator story, category, price"
+    },
+    {
+      "id": "US-020",
+      "title": "Email templates — welcome, purchase receipt, download link",
+      "description": "As a buyer, I want professional emails after signing up and purchasing so I have records and download access.",
+      "acceptanceCriteria": [
+        "Resend SDK configured with API key and verified sender domain",
+        "Welcome email sent on first account creation: branded header, welcome message, link to browse skills",
+        "Purchase receipt email sent after successful Stripe checkout: skill name, price, date, download link (signed URL), install instructions",
+        "Email templates use consistent dark-themed branding matching the site (HTML emails with inline styles)",
+        "All emails include unsubscribe link and company info in footer",
+        "Emails tested in development with Resend test mode",
+        "Typecheck passes"
+      ],
+      "priority": 20,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-021",
+      "title": "Analytics — Vercel Analytics and conversion tracking",
+      "description": "As a marketplace operator, I need analytics to understand traffic, conversions, and funnel drop-off.",
+      "acceptanceCriteria": [
+        "Vercel Analytics enabled (one-line integration via @vercel/analytics)",
+        "Vercel Speed Insights enabled for Core Web Vitals monitoring",
+        "Custom events tracked: skill_viewed, buy_clicked, purchase_completed, download_clicked",
+        "Events fire at appropriate points in the user flow (detail page load, buy button click, webhook success, download click)",
+        "Typecheck passes"
+      ],
+      "priority": 21,
+      "passes": false,
+      "notes": "PostHog or Plausible can be added later for deeper funnel analysis"
+    }
+  ]
+}
