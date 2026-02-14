@@ -1,43 +1,39 @@
-# Ralph Agent Instructions
+# OpenClaw Marketplace — Agent Instructions
 
 ## Overview
 
-Ralph is an autonomous AI agent loop that runs Amp repeatedly until all PRD items are complete. Each iteration is a fresh Amp instance with clean context.
+Premium skill marketplace for OpenClaw at **openclaw.design**. Users browse, purchase, and download AI agent skill bundles via Stripe.
 
-## Commands
+## Tech Stack
 
-```bash
-# Run the flowchart dev server
-cd flowchart && npm run dev
-
-# Build the flowchart
-cd flowchart && npm run build
-
-# Run Ralph (from your project that has prd.json)
-./ralph.sh [max_iterations]
-```
+- **Framework:** Next.js 15 (App Router), TypeScript
+- **UI:** HeroUI (heroui.com) + Tailwind CSS
+- **Fonts:** Geist Mono (headings, code) + Geist Sans (body)
+- **Database:** Drizzle ORM + Vercel Postgres (or Neon)
+- **Auth:** NextAuth.js v5 (GitHub OAuth + email)
+- **Payments:** Stripe Checkout + Webhooks
+- **Email:** Resend
+- **Storage:** Vercel Blob
+- **Hosting:** Vercel
 
 ## Key Files
 
-- `ralph.sh` - The bash loop that spawns fresh Amp instances
-- `prompt.md` - Instructions given to each Amp instance
-- `prd.json.example` - Example PRD format
-- `flowchart/` - Interactive React Flow diagram explaining how Ralph works
+- `prd.json` — Ralph-ready PRD with 21 user stories
+- `tasks/prd-openclaw-marketplace.md` — Full PRD markdown
+- `design/stitch-prompt.md` — Google Stitch design prompt
+- `.env.example` — All required environment variables
+- `prd-generator/skills/` — PRD and SEO skills
 
-## Flowchart
+## Design Direction
 
-The `flowchart/` directory contains an interactive visualization built with React Flow. It's designed for presentations - click through to reveal each step with animations.
-
-To run locally:
-```bash
-cd flowchart
-npm install
-npm run dev
-```
+- Dark theme matching openclaw.ai aesthetic
+- Animated ASCII art claw in hero background (monospace text, low opacity)
+- Geist Mono for terminal/hacker feel, Geist Sans for body
+- Reference: https://openclaw.ai/
 
 ## Patterns
 
-- Each iteration spawns a fresh Amp instance with clean context
-- Memory persists via git history, `progress.txt`, and `prd.json`
-- Stories should be small enough to complete in one context window
-- Always update AGENTS.md with discovered patterns for future iterations
+- Skills are SKILL.md bundles (same format as OpenClaw native skills)
+- After purchase: SKILL.md revealed inline + copy button + download
+- Single-vendor store (our team only, no third-party sellers for MVP)
+- Gambling/betting skills require legal disclaimers
