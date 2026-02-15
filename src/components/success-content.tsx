@@ -6,16 +6,20 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 interface PurchasedSkill {
+  id: string;
   name: string;
   slug: string;
-  githubRepo: string;
+  price_cents: number;
+  currency: string;
 }
 
 interface SessionData {
-  githubUsername: string;
+  userId: string;
   skills: PurchasedSkill[];
   customerEmail: string | null;
   paymentStatus: string;
+  amountTotal: number;
+  currency: string;
 }
 
 function CheckIcon() {
@@ -66,7 +70,7 @@ function CopyButton({ text }: { text: string }) {
 
 export function SuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const sessionId = searchParams?.get("session_id");
   const { clearCart } = useCart();
 
   const [session, setSession] = useState<SessionData | null>(null);
@@ -151,17 +155,7 @@ export function SuccessContent() {
             You&apos;re in!
           </h1>
           <p className="font-mono text-sm text-white/50 leading-relaxed max-w-sm mx-auto">
-            Check your email for GitHub repo invitations.
-            {session?.githubUsername && (
-              <>
-                {" "}
-                We&apos;re granting{" "}
-                <span className="text-white font-semibold">
-                  @{session.githubUsername}
-                </span>{" "}
-                access now.
-              </>
-            )}
+            Your skills are ready to download! Each package includes the SKILL.md definition and all assets.
           </p>
         </div>
 
@@ -174,27 +168,31 @@ export function SuccessContent() {
             <ul className="space-y-2">
               {session.skills.map((skill) => (
                 <li
-                  key={skill.slug}
+                  key={skill.id}
                   className="flex items-center gap-3 p-4 rounded-xl bg-[#1E1510] border border-[#2D221C]"
                 >
                   <span className="text-white/50">
-                    <GitHubIcon />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10,9 9,9 8,9"/>
+                    </svg>
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="font-mono text-sm font-semibold text-white truncate">
                       {skill.name}
                     </p>
                     <p className="font-mono text-xs text-white/30 truncate">
-                      {skill.githubRepo}
+                      ${(skill.price_cents / 100).toFixed(2)} {skill.currency.toUpperCase()}
                     </p>
                   </div>
                   <a
-                    href={`https://github.com/${skill.githubRepo}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-mono text-[#FF4D4D] hover:text-[#FF4D4D]/80 transition-colors shrink-0"
+                    href={`/api/downloads/${skill.id}`}
+                    className="text-xs font-mono text-[#FF4D4D] hover:text-[#FF4D4D]/80 transition-colors shrink-0 px-3 py-1 rounded-md bg-[#FF4D4D]/10 hover:bg-[#FF4D4D]/20"
                   >
-                    Open →
+                    Download
                   </a>
                 </li>
               ))}
@@ -207,36 +205,20 @@ export function SuccessContent() {
           <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
             Install in 30 seconds
           </h2>
-          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] overflow-hidden">
-            {session?.skills?.map((skill, i) => {
-              const cloneCmd = `git clone git@github.com:${skill.githubRepo}.git`;
-              const cpCmd = `cp -r ${skill.githubRepo.split("/")[1]}/SKILL.md skills/`;
-              return (
-                <div
-                  key={skill.slug}
-                  className={`p-4 space-y-2 ${
-                    i > 0 ? "border-t border-[#1E1510]" : ""
-                  }`}
-                >
-                  <p className="font-mono text-xs text-white/40">
-                    {skill.name}
-                  </p>
-                  <div className="relative">
-                    <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed overflow-x-auto pr-16">
-                      <code>
-                        {cloneCmd}
-                        {"\n"}
-                        {cpCmd}
-                      </code>
-                    </pre>
-                    <CopyButton text={`${cloneCmd}\n${cpCmd}`} />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4">
+            <div className="relative">
+              <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed overflow-x-auto pr-16">
+                <code>
+                  # Download and extract your skills{"\n"}
+                  # Copy SKILL.md files to your agent&apos;s skills/ folder{"\n"}
+                  cp *.skill/SKILL.md ~/your-agent/skills/
+                </code>
+              </pre>
+              <CopyButton text="cp *.skill/SKILL.md ~/your-agent/skills/" />
+            </div>
           </div>
           <p className="font-mono text-[10px] text-white/20 leading-relaxed">
-            Accept the GitHub invitation first, then clone the repo and copy the
+            Download each skill bundle above, extract them, and copy the
             SKILL.md into your agent&apos;s <code>skills/</code> folder. Your
             agent picks it up on next run.
           </p>

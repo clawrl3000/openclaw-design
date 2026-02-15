@@ -7,7 +7,22 @@ import { SiteNavbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { useCart } from "@/context/cart-context";
 import type { Skill } from "@/data/skills";
+import { SKILLS } from "@/data/skills";
 import { getRichContent } from "@/components/rich-content";
+
+// Get related skills based on category and other factors
+function getRelatedSkills(currentSkill: Skill): Skill[] {
+  return SKILLS
+    .filter(skill => skill.slug !== currentSkill.slug) // Exclude current skill
+    .sort((a, b) => {
+      // Prioritize same category
+      if (a.category === currentSkill.category && b.category !== currentSkill.category) return -1;
+      if (b.category === currentSkill.category && a.category !== currentSkill.category) return 1;
+      
+      // Then sort by rating
+      return b.rating - a.rating;
+    });
+}
 
 /* ── Icons ────────────────────────────────────────────────── */
 
@@ -431,6 +446,72 @@ export function SkillDetailContent({ skill }: { skill: Skill }) {
           </div>
         </div>
       </main>
+
+      {/* Related Skills Section */}
+      <section className="bg-[#0A0401] py-16 border-t border-white/[0.04]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="font-mono text-2xl font-bold text-white/90 mb-3">
+              Related Skills
+            </h2>
+            <p className="text-white/40 font-mono">
+              Other skills that work great with {skill.name}
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getRelatedSkills(skill).slice(0, 3).map((relatedSkill) => (
+              <div
+                key={relatedSkill.slug}
+                className="bg-gradient-to-br from-gray-800/20 to-gray-900/20 border border-white/[0.04] rounded-xl p-6 hover:border-white/[0.08] transition-all duration-300 group"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  {relatedSkill.heroImage && (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-800/50">
+                      <img 
+                        src={relatedSkill.heroImage} 
+                        alt={relatedSkill.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h3 className="font-mono font-semibold text-white/90 text-lg leading-tight group-hover:text-white transition-colors">
+                      {relatedSkill.name}
+                    </h3>
+                    <Chip 
+                      size="sm" 
+                      variant="flat"
+                      className="mt-1 bg-white/5 text-white/40 font-mono text-xs"
+                    >
+                      {relatedSkill.category}
+                    </Chip>
+                  </div>
+                </div>
+                
+                <p className="text-white/50 text-sm font-mono leading-relaxed mb-4 line-clamp-2">
+                  {relatedSkill.tagline}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-white/80">
+                    {relatedSkill.price}
+                  </span>
+                  <Button 
+                    as={Link}
+                    href={`/skills/${relatedSkill.slug}`}
+                    size="sm"
+                    variant="flat"
+                    className="font-mono bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80 border border-white/10 hover:border-white/20 transition-all"
+                  >
+                    View Details
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <Footer />
 

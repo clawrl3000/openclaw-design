@@ -1,21 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getSkillBySlug } from "@/data/skills";
+import { db } from "@/db";
+import { skills } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/auth";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
 }
 
 interface CheckoutItem {
-  slug: string;
+  skillId: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
+    // Get the authenticated user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
-    const { items, githubUsername } = body as {
+    const { items } = body as {
       items: CheckoutItem[];
-      githubUsername: string;
     };
 
     // Validate input
@@ -26,34 +38,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!githubUsername || githubUsername.trim().length === 0) {
-      return NextResponse.json(
-        { error: "GitHub username is required" },
-        { status: 400 }
-      );
-    }
-
-    // Resolve items to skills and build line_items
+    // Resolve items to skills from database and build line_items
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-    const slugs: string[] = [];
+    const skillIds: string[] = [];
 
     for (const item of items) {
-      const skill = getSkillBySlug(item.slug);
+      const [skill] = await db
+        .select()
+        .from(skills)
+        .where(eq(skills.id, item.skillId))
+        .limit(1);
+
       if (!skill) {
         return NextResponse.json(
-          { error: `Unknown skill: ${item.slug}` },
+          { error: `Unknown skill: ${item.skillId}` },
           { status: 400 }
         );
       }
-      slugs.push(skill.slug);
+
+      // Only allow purchasing published skills
+      if (!skill.published) {
+        return NextResponse.json(
+          { error: `Skill ${skill.name} is not available for purchase` },
+          { status: 400 }
+        );
+      }
+
+      skillIds.push(skill.id);
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency: skill.currency.toLowerCase(),
           product_data: {
             name: skill.name,
             description: skill.tagline,
+            images: skill.hero_image_url ? [skill.hero_image_url] : undefined,
           },
-          unit_amount: Math.round(skill.priceNum * 100), // cents
+          unit_amount: skill.price_cents,
         },
         quantity: 1,
       });
@@ -62,18 +82,25 @@ export async function POST(req: NextRequest) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
     // Create Stripe Checkout Session
-    const session = await getStripe().checkout.sessions.create({
+    const stripeSession = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
+      customer_email: session.user.email || undefined,
       metadata: {
-        github_username: githubUsername.trim(),
-        skill_slugs: slugs.join(","),
+        user_id: session.user.id,
+        skill_ids: skillIds.join(","),
       },
       success_url: `${siteUrl}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/`,
+      payment_intent_data: {
+        metadata: {
+          user_id: session.user.id,
+          skill_ids: skillIds.join(","),
+        },
+      },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: stripeSession.url });
   } catch (err) {
     console.error("Checkout error:", err);
     const message =

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getSkillBySlug } from "@/data/skills";
+import { db } from "@/db";
+import { skills } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -24,26 +26,36 @@ export async function GET(req: NextRequest) {
     const session = await getStripe().checkout.sessions.retrieve(sessionId);
 
     const metadata = session.metadata || {};
-    const githubUsername = metadata.github_username || "";
-    const slugs = metadata.skill_slugs?.split(",").filter(Boolean) || [];
+    const userId = metadata.user_id || "";
+    const skillIds = metadata.skill_ids?.split(",").filter(Boolean) || [];
 
-    const skills = slugs
-      .map((slug) => {
-        const skill = getSkillBySlug(slug);
-        if (!skill) return null;
-        return {
+    // Fetch skill details from database
+    const purchasedSkills = [];
+    for (const skillId of skillIds) {
+      const [skill] = await db
+        .select()
+        .from(skills)
+        .where(eq(skills.id, skillId))
+        .limit(1);
+
+      if (skill) {
+        purchasedSkills.push({
+          id: skill.id,
           name: skill.name,
           slug: skill.slug,
-          githubRepo: skill.githubRepo,
-        };
-      })
-      .filter(Boolean);
+          price_cents: skill.price_cents,
+          currency: skill.currency,
+        });
+      }
+    }
 
     return NextResponse.json({
-      githubUsername,
-      skills,
+      userId,
+      skills: purchasedSkills,
       customerEmail: session.customer_details?.email || null,
       paymentStatus: session.payment_status,
+      amountTotal: session.amount_total,
+      currency: session.currency,
     });
   } catch (err) {
     console.error("Session fetch error:", err);

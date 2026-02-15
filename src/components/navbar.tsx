@@ -7,8 +7,14 @@ import {
   NavbarItem,
   Button,
   Input,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Avatar,
 } from "@heroui/react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { CartButton } from "@/components/cart-button";
 
 function ClawIcon({ className }: { className?: string }) {
@@ -71,7 +77,70 @@ function SearchIcon() {
   );
 }
 
+function UserMenu({ user }: { user: any }) {
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
+  return (
+    <Dropdown placement="bottom-end">
+      <DropdownTrigger>
+        <Avatar
+          isBordered
+          as="button"
+          className="transition-transform border-white/20 hover:border-white/40"
+          color="default"
+          name={user.name || user.email}
+          size="sm"
+          src={user.image}
+        />
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label="Profile Actions"
+        variant="flat"
+        classNames={{
+          base: "bg-[#110B07] border border-white/10",
+          list: "bg-[#110B07]",
+        }}
+      >
+        <DropdownItem
+          key="profile"
+          className="h-14 gap-2 text-white/80"
+          textValue="Profile"
+        >
+          <p className="font-semibold">Signed in as</p>
+          <p className="font-semibold">{user.email}</p>
+        </DropdownItem>
+        <DropdownItem
+          key="dashboard"
+          className="text-white/80 hover:bg-white/10"
+          textValue="Dashboard"
+        >
+          My Dashboard
+        </DropdownItem>
+        <DropdownItem
+          key="purchases"
+          className="text-white/80 hover:bg-white/10"
+          textValue="Purchases"
+        >
+          My Purchases
+        </DropdownItem>
+        <DropdownItem
+          key="logout"
+          color="danger"
+          className="text-red-400 hover:bg-red-500/10"
+          onPress={handleSignOut}
+        >
+          Sign Out
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+}
+
 export function SiteNavbar() {
+  const { data: session } = useSession();
+
   return (
     <HeroNavbar
       maxWidth="xl"
@@ -129,15 +198,19 @@ export function SiteNavbar() {
           <CartButton />
         </NavbarItem>
         <NavbarItem>
-          <Button
-            as={Link}
-            href="/auth/signin"
-            size="sm"
-            variant="flat"
-            className="font-mono text-sm bg-[#1E1510] text-white/80 hover:bg-[#2D221C] border border-[#2D221C] rounded-lg"
-          >
-            Sign In
-          </Button>
+          {session?.user ? (
+            <UserMenu user={session.user} />
+          ) : (
+            <Button
+              as={Link}
+              href="/auth/signin"
+              size="sm"
+              variant="flat"
+              className="font-mono text-sm bg-[#1E1510] text-white/80 hover:bg-[#2D221C] border border-[#2D221C] rounded-lg"
+            >
+              Sign In
+            </Button>
+          )}
         </NavbarItem>
       </NavbarContent>
     </HeroNavbar>
