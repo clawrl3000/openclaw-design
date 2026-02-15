@@ -1,17 +1,17 @@
 ---
-name: ralph
-description: "Convert PRDs to prd.json format for the Ralph autonomous agent system. Use when you have an existing PRD and need to convert it to Ralph's JSON format. Triggers on: convert this prd, turn this into ralph format, create prd.json from this, ralph json."
+name: convert-to-json
+description: "Convert PRDs to prd.json format for structured task execution. Use when you have an existing PRD and need to convert it to JSON. Triggers on: convert this prd, turn this into json, create prd.json from this."
 ---
 
-# Ralph PRD Converter
+# PRD to JSON Converter
 
-Converts existing PRDs to the prd.json format that Ralph uses for autonomous execution.
+Converts existing PRDs into a structured `prd.json` format with user stories, acceptance criteria, and priorities.
 
 ---
 
 ## The Job
 
-Take a PRD (markdown file or text) and convert it to `prd.json` in your ralph directory.
+Take a PRD (markdown file or text) and convert it to `prd.json`.
 
 ---
 
@@ -20,7 +20,7 @@ Take a PRD (markdown file or text) and convert it to `prd.json` in your ralph di
 ```json
 {
   "project": "[Project Name]",
-  "branchName": "ralph/[feature-name-kebab-case]",
+  "branchName": "[feature-name-kebab-case]",
   "description": "[Feature description from PRD title/intro]",
   "userStories": [
     {
@@ -42,11 +42,9 @@ Take a PRD (markdown file or text) and convert it to `prd.json` in your ralph di
 
 ---
 
-## Story Size: The Number One Rule
+## Story Size
 
-**Each story must be completable in ONE Ralph iteration (one context window).**
-
-Ralph spawns a fresh Amp instance per iteration with no memory of previous work. If a story is too big, the LLM runs out of context before finishing and produces broken code.
+**Each story should be small and focused — completable in one session.**
 
 ### Right-sized stories:
 - Add a database column and migration
@@ -55,9 +53,9 @@ Ralph spawns a fresh Amp instance per iteration with no memory of previous work.
 - Add a filter dropdown to a list
 
 ### Too big (split these):
-- "Build the entire dashboard" - Split into: schema, queries, UI components, filters
-- "Add authentication" - Split into: schema, middleware, login UI, session handling
-- "Refactor the API" - Split into one story per endpoint or pattern
+- "Build the entire dashboard" — Split into: schema, queries, UI components, filters
+- "Add authentication" — Split into: schema, middleware, login UI, session handling
+- "Refactor the API" — Split into one story per endpoint or pattern
 
 **Rule of thumb:** If you cannot describe the change in 2-3 sentences, it is too big.
 
@@ -73,22 +71,17 @@ Stories execute in priority order. Earlier stories must not depend on later ones
 3. UI components that use the backend
 4. Dashboard/summary views that aggregate data
 
-**Wrong order:**
-1. UI component (depends on schema that does not exist yet)
-2. Schema change
-
 ---
 
 ## Acceptance Criteria: Must Be Verifiable
 
-Each criterion must be something Ralph can CHECK, not something vague.
+Each criterion must be something that can be checked, not something vague.
 
 ### Good criteria (verifiable):
 - "Add `status` column to tasks table with default 'pending'"
 - "Filter dropdown has options: All, Active, Completed"
 - "Clicking delete shows confirmation dialog"
 - "Typecheck passes"
-- "Tests pass"
 
 ### Bad criteria (vague):
 - "Works correctly"
@@ -101,17 +94,10 @@ Each criterion must be something Ralph can CHECK, not something vague.
 "Typecheck passes"
 ```
 
-For stories with testable logic, also include:
-```
-"Tests pass"
-```
-
 ### For stories that change UI, also include:
 ```
-"Verify in browser using dev-browser skill"
+"Verify in browser"
 ```
-
-Frontend stories are NOT complete until visually verified. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
 
 ---
 
@@ -121,7 +107,7 @@ Frontend stories are NOT complete until visually verified. Ralph will use the de
 2. **IDs**: Sequential (US-001, US-002, etc.)
 3. **Priority**: Based on dependency order, then document order
 4. **All stories**: `passes: false` and empty `notes`
-5. **branchName**: Derive from feature name, kebab-case, prefixed with `ralph/`
+5. **branchName**: Derive from feature name, kebab-case
 6. **Always add**: "Typecheck passes" to every story's acceptance criteria
 
 ---
@@ -164,7 +150,7 @@ Add ability to mark tasks with different statuses.
 ```json
 {
   "project": "TaskApp",
-  "branchName": "ralph/task-status",
+  "branchName": "task-status",
   "description": "Task Status Feature - Track task progress with status indicators",
   "userStories": [
     {
@@ -188,7 +174,7 @@ Add ability to mark tasks with different statuses.
         "Each task card shows colored status badge",
         "Badge colors: gray=pending, blue=in_progress, green=done",
         "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "Verify in browser"
       ],
       "priority": 2,
       "passes": false,
@@ -203,7 +189,7 @@ Add ability to mark tasks with different statuses.
         "Changing status saves immediately",
         "UI updates without page refresh",
         "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "Verify in browser"
       ],
       "priority": 3,
       "passes": false,
@@ -217,7 +203,7 @@ Add ability to mark tasks with different statuses.
         "Filter dropdown: All | Pending | In Progress | Done",
         "Filter persists in URL params",
         "Typecheck passes",
-        "Verify in browser using dev-browser skill"
+        "Verify in browser"
       ],
       "priority": 4,
       "passes": false,
@@ -229,29 +215,13 @@ Add ability to mark tasks with different statuses.
 
 ---
 
-## Archiving Previous Runs
-
-**Before writing a new prd.json, check if there is an existing one from a different feature:**
-
-1. Read the current `prd.json` if it exists
-2. Check if `branchName` differs from the new feature's branch name
-3. If different AND `progress.txt` has content beyond the header:
-   - Create archive folder: `archive/YYYY-MM-DD-feature-name/`
-   - Copy current `prd.json` and `progress.txt` to archive
-   - Reset `progress.txt` with fresh header
-
-**The ralph.sh script handles this automatically** when you run it, but if you are manually updating prd.json between runs, archive first.
-
----
-
 ## Checklist Before Saving
 
 Before writing prd.json, verify:
 
-- [ ] **Previous run archived** (if prd.json exists with different branchName, archive it first)
-- [ ] Each story is completable in one iteration (small enough)
-- [ ] Stories are ordered by dependency (schema to backend to UI)
+- [ ] Each story is small and focused (completable in one session)
+- [ ] Stories are ordered by dependency (schema → backend → UI)
 - [ ] Every story has "Typecheck passes" as criterion
-- [ ] UI stories have "Verify in browser using dev-browser skill" as criterion
+- [ ] UI stories have "Verify in browser" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story

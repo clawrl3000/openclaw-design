@@ -1,6 +1,6 @@
 {
   "project": "OpenClaw Marketplace",
-  "branchName": "ralph/openclaw-marketplace",
+  "branchName": "openclaw-marketplace",
   "description": "Premium skill marketplace at openclaw.design — browse, purchase, and download OpenClaw skill bundles via Stripe.",
   "userStories": [
     {

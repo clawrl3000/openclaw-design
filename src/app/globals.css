@@ -1,0 +1,289 @@
+@import "tailwindcss";
+
+@plugin "./hero.ts";
+@source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Design tokens — warm dark palette to complement coral/orange accents */
+  --color-navy: #110B07;
+  --color-surface: #1E1510;
+  --color-surface-hover: #2D221C;
+
+  /* Warm accents — red-coral + orange (openclaw.ai uses --coral-bright ≈ #FF4D4D) */
+  --color-coral: #FF4D4D;
+  --color-coral-dark: #E63E3E;
+  --color-orange: #F97316;
+  --color-amber: #F59E0B;
+
+  /* Cool accent — cyan/teal (secondary, for hover states and code) */
+  --color-cyan: #00E5CC;
+}
+
+/* Base dark background */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-navy);
+  color: #ECEDEE;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-navy);
+}
+::-webkit-scrollbar-thumb {
+  background: #1E1510;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Coral gradient button — matches openclaw.ai button style */
+.btn-coral {
+  background: linear-gradient(135deg, #FF4D4D 0%, #F97316 100%);
+  color: white;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+.btn-coral:hover {
+  background: linear-gradient(135deg, #E63E3E 0%, #EA6C0E 100%);
+}
+
+/* Glow effects — warm red/coral glow matching openclaw.ai nebula */
+.glow-coral {
+  box-shadow: 0 0 24px rgba(255, 77, 77, 0.3), 0 0 60px rgba(255, 77, 77, 0.08);
+}
+.glow-coral:hover {
+  box-shadow: 0 0 32px rgba(255, 77, 77, 0.45), 0 0 80px rgba(255, 77, 77, 0.12);
+}
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Price pill per stitch spec */
+.price-pill {
+  background: rgba(255, 77, 77, 0.12);
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  color: #FF4D4D;
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* Nebula background effect — red/coral atmospheric glow like openclaw.ai */
+.nebula-red {
+  background: radial-gradient(
+    ellipse 600px 400px at 50% 0%,
+    rgba(255, 77, 77, 0.08) 0%,
+    transparent 70%
+  );
+}
+.nebula-orange {
+  background: radial-gradient(
+    ellipse 500px 300px at 70% 20%,
+    rgba(249, 115, 22, 0.06) 0%,
+    transparent 70%
+  );
+}
+
+/* Ken Burns slow zoom-pan for hero images */
+@keyframes kenBurns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  33% {
+    transform: scale(1.06) translate(-0.5%, -0.8%);
+  }
+  66% {
+    transform: scale(1.03) translate(0.4%, -0.3%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+.hero-ken-burns {
+  animation: kenBurns 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Animated noise grain overlay */
+@keyframes noiseShift {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-5%, -5%); }
+  20%  { transform: translate(-10%, 5%); }
+  30%  { transform: translate(5%, -10%); }
+  40%  { transform: translate(-5%, 15%); }
+  50%  { transform: translate(-10%, 5%); }
+  60%  { transform: translate(15%, 0); }
+  70%  { transform: translate(0, 10%); }
+  80%  { transform: translate(-15%, 0); }
+  90%  { transform: translate(10%, 5%); }
+  100% { transform: translate(5%, 0); }
+}
+/* Hero glow pulse — intermittent breathing halo + brightness.
+   8s cycle: sits idle for ~60%, glows at ~25-40%, settles back.
+   Feels alive without being distracting. */
+@keyframes heroGlowPulse {
+  0%, 60%, 100% {
+    box-shadow:
+      0 0 15px rgba(255, 77, 77, 0.03),
+      0 0 40px rgba(249, 115, 22, 0.02),
+      inset 0 0 20px rgba(255, 77, 77, 0.01);
+  }
+  75% {
+    box-shadow:
+      0 0 30px rgba(255, 77, 77, 0.12),
+      0 0 80px rgba(249, 115, 22, 0.06),
+      0 0 120px rgba(245, 158, 11, 0.03),
+      inset 0 0 40px rgba(255, 77, 77, 0.04);
+  }
+}
+@keyframes heroBrightnessPulse {
+  0%, 60%, 100% {
+    filter: brightness(1);
+  }
+  75% {
+    filter: brightness(1.08);
+  }
+}
+.hero-glow-container {
+  animation: heroGlowPulse 8s ease-in-out infinite;
+}
+.hero-glow-img {
+  animation: kenBurns 20s ease-in-out infinite, heroBrightnessPulse 8s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+/* Add-to-Cart impact animation */
+@keyframes addToCartBounce {
+  0% { transform: scale(1); }
+  15% { transform: scale(0.95); }
+  40% { transform: scale(1.08); }
+  60% { transform: scale(0.98); }
+  80% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+@keyframes addToCartFlash {
+  0% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+.add-cart-bounce {
+  animation: addToCartBounce 0.5s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+/* Cart badge pop */
+@keyframes badgePop {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.3); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.badge-pop {
+  animation: badgePop 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+/* Sticky bar entrance — overshoot spring */
+@keyframes stickySlideIn {
+  0% { transform: translateY(100%); opacity: 0; }
+  60% { transform: translateY(-6px); opacity: 1; }
+  80% { transform: translateY(2px); }
+  100% { transform: translateY(0); }
+}
+.sticky-enter {
+  animation: stickySlideIn 0.45s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+/* Star cascade */
+@keyframes starAppear {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.4); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Cart item entrance */
+@keyframes cartItemIn {
+  0% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  60% {
+    transform: translateX(-4px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+/* Cart item removal */
+@keyframes cartItemOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 80px;
+    margin-bottom: 12px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  40% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+.cart-item-enter {
+  animation: cartItemIn 0.35s cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+.cart-item-exit {
+  animation: cartItemOut 0.4s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  overflow: hidden;
+}
+
+/* Text glow utilities */
+.glow-text-amber {
+  text-shadow:
+    0 0 6px rgba(245, 158, 11, 0.35),
+    0 0 20px rgba(245, 158, 11, 0.15),
+    0 0 40px rgba(245, 158, 11, 0.06);
+}
+.glow-text-coral {
+  text-shadow:
+    0 0 6px rgba(255, 77, 77, 0.4),
+    0 0 20px rgba(255, 77, 77, 0.18),
+    0 0 40px rgba(255, 77, 77, 0.07);
+}
+.glow-text-white {
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.12),
+    0 0 24px rgba(255, 255, 255, 0.05);
+}
+
+.noise-overlay {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  opacity: 0.03;
+  pointer-events: none;
+  animation: noiseShift 1s steps(3) infinite;
+  mix-blend-mode: overlay;
+}

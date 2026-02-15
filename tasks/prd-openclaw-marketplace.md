@@ -481,8 +481,8 @@ SPECIFIC ELEMENTS:
 
 ---
 
-## Using this PRD with Ralph
+## Using this PRD
 
 - **Markdown:** `tasks/prd-openclaw-marketplace.md`
-- **Ralph-ready JSON:** Convert using the `convert-to-json` skill in `prd-generator/skills/`
-- **Branch:** `ralph/openclaw-marketplace`
+- **JSON:** `prd.json` (converted via `prd-generator/skills/convert-to-json/`)
+- **Branch:** `openclaw-marketplace`

@@ -4,11 +4,15 @@ Premium skill marketplace for [OpenClaw](https://openclaw.ai/) at **openclaw.des
 
 Browse, purchase, and download curated AI agent skill bundles via Stripe.
 
+## Status
+
+**This repo is the project foundation** — PRD, design specs, and planning artifacts. The Next.js app will be built from these specs.
+
 ## What Is This?
 
 While [ClawHub](https://clawhub.ai) is the free, open-source skill registry for OpenClaw, this marketplace sells **premium, curated skills** — tested, documented, with walkthroughs and creator stories.
 
-## Tech Stack
+## Planned Tech Stack
 
 | Layer | Choice |
 |-------|--------|
@@ -21,33 +25,18 @@ While [ClawHub](https://clawhub.ai) is the free, open-source skill registry for 
 | Email | Resend |
 | Hosting | Vercel |
 
-## Getting Started
-
-```bash
-# Install dependencies
-npm install
-
-# Copy environment variables
-cp .env.example .env.local
-# Fill in your API keys in .env.local
-
-# Run dev server
-npm run dev
-```
-
-See `.env.example` for all required environment variables.
-
-## Project Structure
+## What's Here
 
 ```
-├── prd.json                          # PRD (21 user stories)
-├── tasks/prd-openclaw-marketplace.md # Full PRD document
+├── prd.json                          # PRD with 21 user stories (structured)
+├── tasks/prd-openclaw-marketplace.md # Full PRD document (markdown)
 ├── design/stitch-prompt.md           # Google Stitch design prompt
-├── prd-generator/skills/             # Reusable skills
-│   ├── create-prd/SKILL.md
-│   ├── convert-to-json/SKILL.md
-│   └── seo-optimizer/SKILL.md
-└── .env.example                      # Required env vars
+├── prd-generator/skills/             # Reusable agent skills
+│   ├── create-prd/SKILL.md           #   PRD generation
+│   ├── convert-to-json/SKILL.md      #   PRD → JSON conversion
+│   └── seo-optimizer/SKILL.md        #   SEO audit & metadata
+├── .env.example                      # Required env vars template
+└── AGENTS.md                         # Agent instructions
 ```
 
 ## License

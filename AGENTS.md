@@ -4,6 +4,8 @@
 
 Premium skill marketplace for OpenClaw at **openclaw.design**. Users browse, purchase, and download AI agent skill bundles via Stripe.
 
+**Current state:** Project foundation (PRD, design specs, planning). The Next.js app will be built from these specs.
+
 ## Tech Stack
 
 - **Framework:** Next.js 15 (App Router), TypeScript
@@ -18,7 +20,7 @@ Premium skill marketplace for OpenClaw at **openclaw.design**. Users browse, pur
 
 ## Key Files
 
-- `prd.json` — Ralph-ready PRD with 21 user stories
+- `prd.json` — PRD with 21 user stories
 - `tasks/prd-openclaw-marketplace.md` — Full PRD markdown
 - `design/stitch-prompt.md` — Google Stitch design prompt
 - `.env.example` — All required environment variables
