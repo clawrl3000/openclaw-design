@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { SiteNavbar } from "@/components/navbar";
@@ -619,6 +620,18 @@ export function HowOpenclawWorksContent() {
             </div>
           </header>
 
+          {/* ── Hero Image ────────────────────────────── */}
+          <div className="reveal my-12 rounded-xl overflow-hidden border border-white/[0.04]">
+            <Image
+              src="/images/how-openclaw-works/hero-event-loop.webp"
+              alt="Abstract visualization of OpenClaw's event loop architecture — glowing amber and teal light traces forming a circular processing loop on a dark background"
+              width={1536}
+              height={1024}
+              className="w-full h-auto"
+              priority
+            />
+          </div>
+
           {/* ── Article Body ──────────────────────────── */}
           <div className="prose-article">
             <div className="reveal">
@@ -634,6 +647,16 @@ export function HowOpenclawWorksContent() {
             <PullQuote>
               The magic isn't magic. It's just well-designed inputs, queues, and an event loop that never stops running.
             </PullQuote>
+
+            <div className="reveal my-12 rounded-xl overflow-hidden border border-white/[0.04]">
+              <Image
+                src="/images/how-openclaw-works/five-inputs.webp"
+                alt="Five distinct streams of colored light converging into a single point — representing the five input types that feed into OpenClaw's processing queue"
+                width={1536}
+                height={1024}
+                className="w-full h-auto"
+              />
+            </div>
 
             <div className="reveal">
               <h2 className="article-h2">The Five Input Types</h2>
@@ -728,6 +751,16 @@ cron_jobs:
             <AgentHandoffDiagram />
 
             <ArchitectureDiagram />
+
+            <div className="reveal my-12 rounded-xl overflow-hidden border border-white/[0.04]">
+              <Image
+                src="/images/how-openclaw-works/three-am-alert.webp"
+                alt="A single amber pulse radiating outward against a dark background — representing a cron job triggering an alert in the middle of the night"
+                width={1536}
+                height={1024}
+                className="w-full h-auto"
+              />
+            </div>
 
             <div className="reveal">
               <h2 className="article-h2">The 3 AM Call, Demystified</h2>
