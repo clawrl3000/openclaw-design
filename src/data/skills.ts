@@ -70,7 +70,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "2.1.0",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/kalshi-hero.png",
+    heroImage: "/images/kalshi-hero.webp",
     heroOverlay: {
       title: "Clawshi",
       subtitle: "AI-Powered Trading Strategies\n& Probability Analysis",
@@ -114,7 +114,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "1.0.0",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/memory-system-hero.png",
+    heroImage: "/images/memory-system-hero.webp",
     heroOverlay: {
       title: "Memory System",
       subtitle: "Persistent Context & Decision Tracking\nfor OpenClaw Agents",
@@ -150,7 +150,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "1.2.0",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/email-responder-hero.png",
+    heroImage: "/images/email-responder-hero.webp",
     heroOverlay: {
       title: "Email Responder",
       subtitle: "AI-Powered Draft Replies\nThat Sound Like You",
@@ -188,7 +188,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "2.1.0",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/sports-odds-hero.png",
+    heroImage: "/images/sports-odds-hero.webp",
     heroOverlay: {
       title: "Odds Analyzer",
       subtitle: "Real-Time Odds Comparison\nAcross 15 Sportsbooks",
@@ -226,7 +226,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "3.0.1",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/pr-reviewer-hero.png",
+    heroImage: "/images/pr-reviewer-hero.webp",
     heroOverlay: {
       title: "PR Reviewer",
       subtitle: "Automated Code Reviews\nin Under 90 Seconds",
@@ -264,7 +264,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "1.5.0",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/social-content-hero.png",
+    heroImage: "/images/social-content-hero.webp",
     heroOverlay: {
       title: "Content Engine",
       subtitle: "One Brief → Four Platforms\nAlgorithm-Tuned Posts",
@@ -302,7 +302,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "1.0.3",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/smart-home-hero.png",
+    heroImage: "/images/smart-home-hero.webp",
     heroOverlay: {
       title: "Smart Home",
       subtitle: "One Command Controls\nEvery Device in Your House",
@@ -340,7 +340,7 @@ export const SKILLS: Skill[] = [
     ],
     version: "2.0.0",
     compatibility: "OpenClaw v2.0+",
-    heroImage: "/images/meeting-notes-hero.png",
+    heroImage: "/images/meeting-notes-hero.webp",
     heroOverlay: {
       title: "Meeting Notes",
       subtitle: "Transcript → Summary + Action Items\nin 8 Seconds",
