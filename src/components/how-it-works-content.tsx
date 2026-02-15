@@ -615,6 +615,15 @@ export function HowItWorksContent() {
                   Back to Home
                 </Button>
               </div>
+              
+              <div className="mt-6 text-center">
+                <Link 
+                  href="/how-openclaw-works" 
+                  className="inline-flex items-center gap-2 text-[#F59E0B] hover:text-[#FF4D4D] transition-colors text-sm font-medium decoration-none border-b border-[#F59E0B]/30 hover:border-[#FF4D4D]/50"
+                >
+                  Want to understand the architecture? Read How OpenClaw Works →
+                </Link>
+              </div>
             </div>
           </div>
         </div>

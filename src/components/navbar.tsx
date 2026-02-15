@@ -194,6 +194,14 @@ export function SiteNavbar() {
             How It Works
           </Link>
         </NavbarItem>
+        <NavbarItem className="hidden sm:flex">
+          <Link
+            href="/how-openclaw-works"
+            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
+          >
+            Architecture
+          </Link>
+        </NavbarItem>
         <NavbarItem>
           <CartButton />
         </NavbarItem>
