@@ -40,19 +40,35 @@ The following repositories need to be created in the `openclaw-design` GitHub ac
 
 ### Repository setup for each skill:
 1. Create private repository in `openclaw-design` organization
-2. Add README.md with skill description
-3. Include the SKILL.md file
+2. Use the `SKILL_README_TEMPLATE.md` to create an excellent README.md
+3. Include the SKILL.md file from the marketplace
 4. Add any supporting files/assets
 5. Set up proper directory structure:
    ```
    skill-name/
-   ├── README.md
-   ├── SKILL.md
+   ├── README.md           # ← Premium, detailed setup guide (use template)
+   ├── SKILL.md           # ← The actual skill file for agents
    ├── assets/
    │   └── (images, files, etc.)
    └── examples/
        └── (usage examples)
    ```
+
+### README Quality Standards
+Each repository README must be **premium quality** using the provided template:
+
+- **Crystal clear installation**: 30-second setup process
+- **Real usage examples**: Show exactly what the skill does
+- **Troubleshooting section**: Address common issues
+- **Professional formatting**: Consistent with the template
+- **Value proposition**: Make it obvious why this skill is worth purchasing
+
+**Template location**: `/SKILL_README_TEMPLATE.md` in this repository
+
+**Example READMEs**: See `/skill-repos/` folder for completed examples:
+- `kalshi-prediction-markets/README.md`
+- `email-dominator/README.md`  
+- `seo-signals-skill/README.md`
 
 ## 3. Update Database with GitHub Repo Names
 
@@ -68,15 +84,43 @@ UPDATE skills SET github_repo = 'dopamine-learning' WHERE slug = 'dopamine-learn
 UPDATE skills SET github_repo = 'click-driver' WHERE slug = 'click-driver';
 ```
 
-## 4. Test the Integration
+## 4. Premium User Experience Flow
+
+The post-purchase experience is now **premium and frictionless**:
+
+### Success Page (Enhanced)
+- ✅ Prompts for GitHub username if not provided
+- ✅ Shows step-by-step installation guide
+- ✅ GitHub method prioritized over downloads
+- ✅ Clear "30 seconds to install" messaging
+- ✅ Fallback instructions for direct downloads
+
+### Dashboard (Enhanced)  
+- ✅ Comprehensive installation guide at top
+- ✅ Step-by-step instructions for GitHub method
+- ✅ Quick-copy terminal commands
+- ✅ Troubleshooting section built-in
+- ✅ "Get from GitHub" buttons prioritized over downloads
+
+### Repository Experience
+- ✅ Premium README formatting using template
+- ✅ Clear value proposition and what's included
+- ✅ 30-second installation process
+- ✅ Real usage examples with context
+- ✅ Troubleshooting and advanced usage
+- ✅ Professional presentation throughout
+
+## 5. Test the Complete Experience
 
 1. Create a test purchase with a GitHub username set
-2. Verify that:
-   - Stripe webhook correctly triggers GitHub invitation
-   - User receives GitHub invitation email  
-   - User can access the repository after accepting
-   - Dashboard shows correct invite status
-   - Success page prompts for GitHub username if not set
+2. Verify the **complete customer journey**:
+   - ✅ Stripe webhook correctly triggers GitHub invitation
+   - ✅ User receives GitHub invitation email  
+   - ✅ Success page shows clear next steps
+   - ✅ User can access repository after accepting invitation
+   - ✅ Repository README provides excellent setup experience
+   - ✅ Dashboard shows installation guide and repo access
+   - ✅ Installation actually works in under 30 seconds
 
 ## 5. Deploy Changes
 

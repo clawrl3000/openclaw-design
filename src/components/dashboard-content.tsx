@@ -351,10 +351,103 @@ export function DashboardContent({ user }: DashboardContentProps) {
           </CardBody>
         </Card>
 
+        {/* Installation Guide */}
+        {purchases.length > 0 && (
+          <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 mb-8">
+            <CardHeader className="pb-0">
+              <h2 className="text-xl font-semibold text-white">📚 How to Install Your Skills</h2>
+            </CardHeader>
+            <CardBody>
+              <div className="space-y-6">
+                
+                {/* GitHub Method (if user has GitHub) */}
+                {userData?.github_username && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                        1
+                      </div>
+                      <div>
+                        <h3 className="text-white font-medium">🎯 Recommended: GitHub Repository Access</h3>
+                        <p className="text-gray-400 text-sm">Get source code, updates, and community support</p>
+                      </div>
+                    </div>
+                    
+                    <div className="ml-11 space-y-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4">
+                      <ol className="text-gray-300 text-sm space-y-2 list-decimal list-inside">
+                        <li><strong>Check your email</strong> for GitHub repository invitations</li>
+                        <li><strong>Accept each invitation</strong> (one per skill you purchased)</li>
+                        <li><strong>Visit the repository</strong> — click "Get from GitHub" buttons below</li>
+                        <li><strong>Follow the README</strong> — every repo has instant setup instructions</li>
+                        <li><strong>Copy SKILL.md</strong> to your agent&apos;s skills/ folder</li>
+                        <li><strong>Restart your agent</strong> → Done! 🎉</li>
+                      </ol>
+                      
+                      <div className="bg-emerald-400/10 rounded p-3 mt-3">
+                        <p className="text-emerald-300 text-xs">
+                          <strong>💡 Pro tip:</strong> GitHub repos get updates automatically. When skills improve, you&apos;ll see the changes!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Download Method */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {userData?.github_username ? "2" : "1"}
+                    </div>
+                    <div>
+                      <h3 className="text-white font-medium">⬇️ Direct Download</h3>
+                      <p className="text-gray-400 text-sm">Quick installation from ZIP files</p>
+                    </div>
+                  </div>
+                  
+                  <div className="ml-11 space-y-3 bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
+                    <ol className="text-gray-300 text-sm space-y-2 list-decimal list-inside">
+                      <li><strong>Click "Download ZIP"</strong> for each skill below</li>
+                      <li><strong>Extract the files</strong> from each download</li>
+                      <li><strong>Find SKILL.md</strong> in each extracted folder</li>
+                      <li><strong>Copy to your agent</strong> skills/ folder</li>
+                      <li><strong>Restart your agent</strong></li>
+                    </ol>
+                    
+                    <div className="bg-gray-800 rounded p-3 font-mono text-xs text-green-400">
+                      <div className="flex items-center justify-between">
+                        <span># Quick install command:</span>
+                        <button
+                          onClick={() => navigator.clipboard.writeText("cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/")}
+                          className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <div className="mt-1">cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Troubleshooting */}
+                <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-4">
+                  <h4 className="text-yellow-300 font-medium mb-2">🔧 Need Help?</h4>
+                  <ul className="text-yellow-200/80 text-sm space-y-1">
+                    <li>• <strong>Can&apos;t find skills folder?</strong> Check your agent&apos;s documentation</li>
+                    <li>• <strong>Skill not working?</strong> Make sure SKILL.md is directly in skills/ (not in a subfolder)</li>
+                    <li>• <strong>GitHub invite missing?</strong> Check spam folder or update your GitHub username above</li>
+                    <li>• <strong>Still stuck?</strong> Visit any GitHub repo and file an issue — we&apos;ll help!</li>
+                  </ul>
+                </div>
+
+              </div>
+            </CardBody>
+          </Card>
+        )}
+
         {/* Purchase History */}
         <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50">
           <CardHeader className="pb-0">
-            <h2 className="text-xl font-semibold text-white">Purchase History</h2>
+            <h2 className="text-xl font-semibold text-white">Your Skills</h2>
           </CardHeader>
           <CardBody>
             {isLoading ? (
@@ -463,30 +556,30 @@ export function DashboardContent({ user }: DashboardContentProps) {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            color="primary"
-                            variant="flat"
-                            startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
-                            isLoading={downloadingId === purchase.skill.id}
-                            onPress={() => handleDownload(purchase.skill.id, purchase.skill.slug)}
-                            isDisabled={purchase.status !== 'completed'}
-                          >
-                            {downloadingId === purchase.skill.id ? 'Downloading...' : 'Download'}
-                          </Button>
-                          {purchase.skill.github_url && (
+                          {purchase.skill.github_url ? (
                             <Button
                               size="sm"
-                              color="secondary"
+                              color="primary"
                               variant="flat"
                               startContent={<GitHubIcon className="h-4 w-4" />}
                               as={Link}
                               href={purchase.skill.github_url}
                               isExternal
                             >
-                              View Repo
+                              Get from GitHub
                             </Button>
-                          )}
+                          ) : null}
+                          <Button
+                            size="sm"
+                            color={purchase.skill.github_url ? "secondary" : "primary"}
+                            variant="flat"
+                            startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
+                            isLoading={downloadingId === purchase.skill.id}
+                            onPress={() => handleDownload(purchase.skill.id, purchase.skill.slug)}
+                            isDisabled={purchase.status !== 'completed'}
+                          >
+                            {downloadingId === purchase.skill.id ? 'Downloading...' : 'Download ZIP'}
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

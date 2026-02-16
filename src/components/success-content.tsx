@@ -312,28 +312,87 @@ export function SuccessContent() {
           </div>
         )}
 
-        {/* Quick install guide */}
-        <div className="space-y-3">
+        {/* Installation Guide */}
+        <div className="space-y-4">
           <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
-            Install in 30 seconds
+            Get Your Skills Installed (30 Seconds)
           </h2>
-          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4">
-            <div className="relative">
-              <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed overflow-x-auto pr-16">
-                <code>
-                  # Download and extract your skills{"\n"}
-                  # Copy SKILL.md files to your agent&apos;s skills/ folder{"\n"}
-                  cp *.skill/SKILL.md ~/your-agent/skills/
-                </code>
-              </pre>
-              <CopyButton text="cp *.skill/SKILL.md ~/your-agent/skills/" />
+          
+          {/* GitHub Method (Premium) */}
+          {currentGithubUsername && session?.skills?.some(s => s.id) && (
+            <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  1
+                </div>
+                <h3 className="font-mono text-sm font-semibold text-white">
+                  🎉 Premium: GitHub Repository Access
+                </h3>
+              </div>
+              
+              <div className="pl-9 space-y-3">
+                <div className="space-y-2">
+                  <p className="font-mono text-sm text-emerald-400 flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                    </svg>
+                    GitHub invitations sent to @{currentGithubUsername}
+                  </p>
+                  <ol className="font-mono text-xs text-white/60 space-y-1 pl-4 list-decimal">
+                    <li>Check your email for GitHub repository invitations</li>
+                    <li>Accept the invitations (one per skill purchased)</li>
+                    <li>Visit each repository — every README has instant setup steps</li>
+                    <li>Copy the SKILL.md file to your agent&apos;s skills/ folder</li>
+                    <li>Restart your agent → Done!</li>
+                  </ol>
+                </div>
+                
+                <div className="flex gap-2 text-xs">
+                  <span className="text-white/40">⭐ Benefits:</span>
+                  <span className="text-white/60">Source code access • File issues • Get updates • Community support</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Direct Download Method */}
+          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-[#FF4D4D] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                {currentGithubUsername ? "2" : "1"}
+              </div>
+              <h3 className="font-mono text-sm font-semibold text-white">
+                {currentGithubUsername ? "Backup: " : ""}Direct Download
+              </h3>
+            </div>
+            
+            <div className="pl-9 space-y-3">
+              <ol className="font-mono text-xs text-white/60 space-y-1 list-decimal">
+                <li>Click "Download" on each skill below</li>
+                <li>Extract the .skill files</li>
+                <li>Copy SKILL.md files to your agent&apos;s skills/ folder</li>
+                <li>Restart your agent</li>
+              </ol>
+              
+              <div className="relative">
+                <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed overflow-x-auto pr-16">
+                  <code>
+                    # Quick install command:{"\n"}
+                    cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/
+                  </code>
+                </pre>
+                <CopyButton text="cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/" />
+              </div>
             </div>
           </div>
-          <p className="font-mono text-[10px] text-white/20 leading-relaxed">
-            Download each skill bundle above, extract them, and copy the
-            SKILL.md into your agent&apos;s <code>skills/</code> folder. Your
-            agent picks it up on next run.
-          </p>
+
+          {/* Need Help */}
+          <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
+            <p className="font-mono text-xs text-blue-300 leading-relaxed">
+              💡 <strong>Need help?</strong> Each skill repository has detailed setup instructions and troubleshooting. 
+              Can&apos;t find your agent&apos;s skills folder? Check your agent&apos;s documentation.
+            </p>
+          </div>
         </div>
 
         {/* Back link */}
