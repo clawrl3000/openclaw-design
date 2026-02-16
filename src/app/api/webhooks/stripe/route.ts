@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { db } from "@/db";
 import { purchases, skills, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { inviteCollaborator, checkRepoExists } from "@/lib/github";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -62,6 +63,13 @@ export async function POST(req: NextRequest) {
       // Get the payment intent to access its ID
       const paymentIntentId = session.payment_intent as string;
 
+      // Get user details to check for GitHub username
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
       // Create purchase records for each skill
       for (const skillId of skillIds) {
         // Get skill details to determine price and currency
@@ -76,6 +84,40 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
+        let githubInviteStatus = 'not_sent';
+
+        // Attempt to send GitHub invitation if user has GitHub username and skill has a repo
+        if (user?.github_username && skill.github_repo) {
+          console.log(`[Webhook] Attempting GitHub invite for ${user.github_username} to ${skill.github_repo}`);
+          
+          try {
+            // Check if repo exists first
+            const repoExists = await checkRepoExists(skill.github_repo);
+            if (!repoExists) {
+              console.error(`[Webhook] Repository ${skill.github_repo} does not exist`);
+              githubInviteStatus = 'failed';
+            } else {
+              // Send the invitation
+              const inviteResult = await inviteCollaborator(skill.github_repo, user.github_username);
+              
+              if (inviteResult.success) {
+                githubInviteStatus = 'sent';
+                console.log(`[Webhook] GitHub invitation sent successfully for ${skill.name}`);
+              } else {
+                githubInviteStatus = 'failed';
+                console.error(`[Webhook] Failed to send GitHub invitation: ${inviteResult.error}`);
+              }
+            }
+          } catch (error) {
+            console.error(`[Webhook] Error sending GitHub invitation:`, error);
+            githubInviteStatus = 'failed';
+          }
+        } else if (!user?.github_username) {
+          console.log(`[Webhook] No GitHub username for user ${userId}, invitation not sent`);
+        } else if (!skill.github_repo) {
+          console.log(`[Webhook] No GitHub repo configured for skill ${skill.name}`);
+        }
+
         // Create purchase record
         await db.insert(purchases).values({
           user_id: userId,
@@ -84,11 +126,12 @@ export async function POST(req: NextRequest) {
           amount_cents: skill.price_cents,
           currency: skill.currency,
           status: "completed",
+          github_invite_status: githubInviteStatus,
           purchased_at: new Date(),
         });
 
         console.log(
-          `[Webhook] Created purchase record for user ${userId}, skill ${skill.name}`
+          `[Webhook] Created purchase record for user ${userId}, skill ${skill.name}, invite status: ${githubInviteStatus}`
         );
       }
 

@@ -46,6 +46,7 @@ export const skills = pgTable('skills', {
   currency: varchar('currency', { length: 3 }).notNull().default('USD'),
   hero_image_url: text('hero_image_url'),
   category: varchar('category', { length: 100 }).notNull(),
+  github_repo: varchar('github_repo', { length: 255 }), // Repository name on openclaw-design
   published: boolean('published').notNull().default(false),
   created_at: timestamp('created_at').notNull().defaultNow(),
   updated_at: timestamp('updated_at').notNull().defaultNow(),
@@ -70,6 +71,7 @@ export const users = pgTable('users', {
   image: text('image'),
   // Additional fields for marketplace functionality
   stripe_customer_id: varchar('stripe_customer_id', { length: 255 }),
+  github_username: varchar('github_username', { length: 255 }), // GitHub username for repo access
   created_at: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -83,6 +85,7 @@ export const purchases = pgTable('purchases', {
   amount_cents: integer('amount_cents').notNull(),
   currency: varchar('currency', { length: 3 }).notNull().default('USD'),
   status: varchar('status', { length: 50 }).notNull().default('pending'),
+  github_invite_status: varchar('github_invite_status', { length: 50 }).default('not_sent'), // not_sent, pending, sent, accepted, failed
   purchased_at: timestamp('purchased_at').notNull().defaultNow(),
 });
 

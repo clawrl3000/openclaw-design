@@ -76,8 +76,13 @@ export function SuccessContent() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [githubUsername, setGithubUsername] = useState<string>("");
+  const [currentGithubUsername, setCurrentGithubUsername] = useState<string | null>(null);
+  const [showGithubForm, setShowGithubForm] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [githubMessage, setGithubMessage] = useState<string | null>(null);
 
-  // Fetch session data and clear the cart
+  // Fetch session data, GitHub username, and clear the cart
   useEffect(() => {
     if (!sessionId) {
       setError("No session ID found");
@@ -85,16 +90,30 @@ export function SuccessContent() {
       return;
     }
 
-    async function fetchSession() {
+    async function fetchData() {
       try {
-        const res = await fetch(
-          `/api/checkout/session?session_id=${sessionId}`
-        );
-        if (!res.ok) throw new Error("Failed to load session");
-        const data = await res.json();
-        setSession(data);
+        // Fetch session data and GitHub username in parallel
+        const [sessionRes, githubRes] = await Promise.all([
+          fetch(`/api/checkout/session?session_id=${sessionId}`),
+          fetch('/api/user/github'),
+        ]);
+
+        if (!sessionRes.ok) throw new Error("Failed to load session");
+        const sessionData = await sessionRes.json();
+        setSession(sessionData);
+
         // Clear the cart after successful purchase
         clearCart();
+
+        // Check GitHub username
+        if (githubRes.ok) {
+          const githubData = await githubRes.json();
+          setCurrentGithubUsername(githubData.github_username);
+          // Show GitHub form if user doesn't have a username set and purchased skills with repos
+          if (!githubData.github_username && sessionData.skills?.length > 0) {
+            setShowGithubForm(true);
+          }
+        }
       } catch {
         setError("Could not load purchase details. Your purchase was still successful — check your email for repo invitations.");
       } finally {
@@ -102,9 +121,44 @@ export function SuccessContent() {
       }
     }
 
-    fetchSession();
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
+
+  // Handle GitHub username submission
+  const handleGithubSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!githubUsername.trim()) return;
+
+    setGithubLoading(true);
+    setGithubMessage(null);
+
+    try {
+      const res = await fetch('/api/user/github', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ github_username: githubUsername }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to update GitHub username');
+      }
+
+      const data = await res.json();
+      setCurrentGithubUsername(githubUsername);
+      setShowGithubForm(false);
+      setGithubMessage(
+        `GitHub username updated! ${data.invitations_sent} repo invitations sent successfully.`
+      );
+    } catch (error) {
+      setGithubMessage(
+        error instanceof Error ? error.message : 'Failed to update GitHub username'
+      );
+    } finally {
+      setGithubLoading(false);
+    }
+  }, [githubUsername]);
 
   if (loading) {
     return (
@@ -155,9 +209,67 @@ export function SuccessContent() {
             You&apos;re in!
           </h1>
           <p className="font-mono text-sm text-white/50 leading-relaxed max-w-sm mx-auto">
-            Your skills are ready to download! Each package includes the SKILL.md definition and all assets.
+            Your skills are ready! Get GitHub repo access for source code, issues, and updates.
           </p>
         </div>
+
+        {/* GitHub username form */}
+        {showGithubForm && (
+          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <GitHubIcon />
+              <h2 className="font-mono text-lg font-semibold text-white">
+                Get GitHub repo access
+              </h2>
+            </div>
+            <p className="font-mono text-sm text-white/60 leading-relaxed">
+              Enter your GitHub username to receive invitations to the private repositories. 
+              This gives you access to the source code, ability to file issues, and automatic updates.
+            </p>
+            
+            <form onSubmit={handleGithubSubmit} className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="github-username"
+                  value={githubUsername}
+                  onChange={(e) => setGithubUsername(e.target.value)}
+                  className="flex-1 px-3 py-2 bg-[#0A0604] border border-[#2D221C] rounded-lg text-white font-mono text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FF4D4D]/50"
+                  disabled={githubLoading}
+                />
+                <button
+                  type="submit"
+                  disabled={githubLoading || !githubUsername.trim()}
+                  className="px-4 py-2 bg-[#FF4D4D] hover:bg-[#FF4D4D]/80 disabled:bg-[#FF4D4D]/30 text-white font-mono text-sm rounded-lg transition-colors"
+                >
+                  {githubLoading ? "Sending..." : "Send invites"}
+                </button>
+              </div>
+              {githubMessage && (
+                <p className="font-mono text-xs text-emerald-400 mt-2">
+                  {githubMessage}
+                </p>
+              )}
+            </form>
+          </div>
+        )}
+
+        {/* GitHub username display */}
+        {currentGithubUsername && !showGithubForm && (
+          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4">
+            <div className="flex items-center gap-3">
+              <GitHubIcon />
+              <div>
+                <p className="font-mono text-sm text-white">
+                  GitHub: <span className="text-emerald-400">{currentGithubUsername}</span>
+                </p>
+                <p className="font-mono text-xs text-white/40">
+                  Check your email for repository invitations
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Purchased skills */}
         {session?.skills && session.skills.length > 0 && (

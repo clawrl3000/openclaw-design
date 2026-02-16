@@ -42,19 +42,36 @@ function CreditCardIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+function GitHubIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z" />
+    </svg>
+  );
+}
 interface Purchase {
   id: string;
   skill: {
     id: string;
     name: string;
     slug: string;
-    hero_image_url?: string;
+    hero_image_url?: string | null;
     category: string;
+    github_repo?: string | null;
+    github_url?: string | null;
   };
   amount_cents: number;
   currency: string;
   status: string;
+  github_invite_status: string | null;
   purchased_at: string;
+}
+
+interface UserData {
+  github_username: string | null;
+  purchases: Purchase[];
+  total_spent: number;
 }
 
 interface DashboardContentProps {
@@ -67,49 +84,32 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ user }: DashboardContentProps) {
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [githubUsername, setGithubUsername] = useState<string>("");
+  const [showGithubForm, setShowGithubForm] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
 
   useEffect(() => {
-    // In a real app, this would fetch from your API
-    // For now, simulate some purchase data
-    const mockPurchases: Purchase[] = [
-      {
-        id: "1",
-        skill: {
-          id: "skill-1",
-          name: "Clawshi",
-          slug: "kalshi-prediction-markets",
-          hero_image_url: "/images/kalshi-hero.png",
-          category: "Trading"
-        },
-        amount_cents: 900,
-        currency: "USD",
-        status: "completed",
-        purchased_at: "2024-02-10T15:30:00Z"
-      },
-      {
-        id: "2", 
-        skill: {
-          id: "skill-2",
-          name: "Email Dominator",
-          slug: "email-dominator",
-          hero_image_url: "/images/email-hero.png",
-          category: "Productivity"
-        },
-        amount_cents: 700,
-        currency: "USD",
-        status: "completed",
-        purchased_at: "2024-02-08T10:15:00Z"
+    async function fetchUserData() {
+      try {
+        const response = await fetch('/api/user/purchases');
+        if (response.ok) {
+          const data: UserData = await response.json();
+          setUserData(data);
+          setGithubUsername(data.github_username || "");
+        } else {
+          console.error('Failed to fetch user data');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
       }
-    ];
+    }
 
-    // Simulate API delay
-    setTimeout(() => {
-      setPurchases(mockPurchases);
-      setIsLoading(false);
-    }, 1000);
+    fetchUserData();
   }, []);
 
   const handleDownload = async (skillId: string, skillSlug: string) => {
@@ -154,7 +154,40 @@ export function DashboardContent({ user }: DashboardContentProps) {
     }).format(new Date(dateString));
   };
 
-  const totalSpent = purchases.reduce((sum, purchase) => sum + purchase.amount_cents, 0);
+  // Handle GitHub username update
+  const handleGithubUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!githubUsername.trim()) return;
+
+    setGithubLoading(true);
+    try {
+      const response = await fetch('/api/user/github', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ github_username: githubUsername }),
+      });
+
+      if (response.ok) {
+        // Refresh user data
+        const updatedResponse = await fetch('/api/user/purchases');
+        if (updatedResponse.ok) {
+          const data: UserData = await updatedResponse.json();
+          setUserData(data);
+        }
+        setShowGithubForm(false);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to update GitHub username');
+      }
+    } catch (error) {
+      alert('Failed to update GitHub username');
+    } finally {
+      setGithubLoading(false);
+    }
+  };
+
+  const purchases = userData?.purchases || [];
+  const totalSpent = userData?.total_spent || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -221,7 +254,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
         </div>
 
         {/* Account Info */}
-        <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 mb-8">
+        <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 mb-4">
           <CardHeader className="pb-0">
             <h2 className="text-xl font-semibold text-white">Account Information</h2>
           </CardHeader>
@@ -238,6 +271,83 @@ export function DashboardContent({ user }: DashboardContentProps) {
                 <p className="text-gray-400">{user.email}</p>
               </div>
             </div>
+          </CardBody>
+        </Card>
+
+        {/* GitHub Integration */}
+        <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 mb-8">
+          <CardHeader className="pb-0">
+            <div className="flex items-center gap-3">
+              <GitHubIcon className="h-5 w-5 text-gray-300" />
+              <h2 className="text-xl font-semibold text-white">GitHub Integration</h2>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {userData?.github_username ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white font-medium">
+                    Connected: <span className="text-green-400">@{userData.github_username}</span>
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    You'll receive repository invitations for purchased skills
+                  </p>
+                </div>
+                <Button
+                  color="secondary"
+                  variant="flat"
+                  size="sm"
+                  onPress={() => setShowGithubForm(true)}
+                >
+                  Change Username
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-gray-300">
+                  Connect your GitHub account to get access to private skill repositories
+                </p>
+                <Button
+                  color="primary"
+                  variant="flat"
+                  startContent={<GitHubIcon className="h-4 w-4" />}
+                  onPress={() => setShowGithubForm(true)}
+                >
+                  Add GitHub Username
+                </Button>
+              </div>
+            )}
+            
+            {showGithubForm && (
+              <form onSubmit={handleGithubUpdate} className="mt-4 space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="GitHub username"
+                    value={githubUsername}
+                    onChange={(e) => setGithubUsername(e.target.value)}
+                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
+                    disabled={githubLoading}
+                  />
+                  <Button
+                    type="submit"
+                    color="primary"
+                    isLoading={githubLoading}
+                    isDisabled={!githubUsername.trim()}
+                  >
+                    {githubLoading ? "Updating..." : "Update"}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    variant="flat"
+                    onPress={() => setShowGithubForm(false)}
+                    isDisabled={githubLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
           </CardBody>
         </Card>
 
@@ -277,7 +387,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
                   <TableColumn>CATEGORY</TableColumn>
                   <TableColumn>AMOUNT</TableColumn>
                   <TableColumn>DATE</TableColumn>
-                  <TableColumn>STATUS</TableColumn>
+                  <TableColumn>GITHUB</TableColumn>
                   <TableColumn>ACTIONS</TableColumn>
                 </TableHeader>
                 <TableBody>
@@ -318,26 +428,66 @@ export function DashboardContent({ user }: DashboardContentProps) {
                         {formatDate(purchase.purchased_at)}
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          size="sm"
-                          color={purchase.status === 'completed' ? 'success' : 'warning'}
-                          variant="flat"
-                        >
-                          {purchase.status}
-                        </Chip>
+                        <div className="space-y-1">
+                          {purchase.skill.github_url ? (
+                            <>
+                              <Link
+                                href={purchase.skill.github_url}
+                                className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm"
+                                isExternal
+                              >
+                                <GitHubIcon className="h-3 w-3" />
+                                Repository
+                              </Link>
+                              <Chip 
+                                size="sm"
+                                color={
+                                  purchase.github_invite_status === 'sent' ? 'success' :
+                                  purchase.github_invite_status === 'failed' ? 'danger' :
+                                  'warning'
+                                }
+                                variant="flat"
+                                className="text-xs"
+                              >
+                                {
+                                  purchase.github_invite_status === 'sent' ? 'Invited' :
+                                  purchase.github_invite_status === 'failed' ? 'Failed' :
+                                  'No invite'
+                                }
+                              </Chip>
+                            </>
+                          ) : (
+                            <span className="text-gray-400 text-sm">No repo</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          color="primary"
-                          variant="flat"
-                          startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
-                          isLoading={downloadingId === purchase.skill.id}
-                          onPress={() => handleDownload(purchase.skill.id, purchase.skill.slug)}
-                          isDisabled={purchase.status !== 'completed'}
-                        >
-                          {downloadingId === purchase.skill.id ? 'Downloading...' : 'Download'}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            color="primary"
+                            variant="flat"
+                            startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
+                            isLoading={downloadingId === purchase.skill.id}
+                            onPress={() => handleDownload(purchase.skill.id, purchase.skill.slug)}
+                            isDisabled={purchase.status !== 'completed'}
+                          >
+                            {downloadingId === purchase.skill.id ? 'Downloading...' : 'Download'}
+                          </Button>
+                          {purchase.skill.github_url && (
+                            <Button
+                              size="sm"
+                              color="secondary"
+                              variant="flat"
+                              startContent={<GitHubIcon className="h-4 w-4" />}
+                              as={Link}
+                              href={purchase.skill.github_url}
+                              isExternal
+                            >
+                              View Repo
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
