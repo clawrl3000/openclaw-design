@@ -145,21 +145,32 @@ export function SkillCard({
             {rating !== undefined && (
               <div className="flex items-center gap-1.5">
                 <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      className={`text-xs ${
-                        star <= Math.round(rating)
-                          ? "text-[#F59E0B]"
-                          : "text-white/10"
-                      }`}
-                    >
-                      ★
-                    </span>
-                  ))}
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const fill = Math.min(1, Math.max(0, rating - (star - 1)));
+                    return (
+                      <span
+                        key={star}
+                        className="text-xs relative inline-block"
+                        style={{ width: "1em", height: "1em" }}
+                      >
+                        <span className="absolute inset-0 text-white/10">★</span>
+                        {fill > 0 && (
+                          <span
+                            className="absolute inset-0 text-[#F59E0B]"
+                            style={{ clipPath: `inset(0 ${(1 - fill) * 100}% 0 0)` }}
+                          >
+                            ★
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
                 <span className="text-[11px] text-white/30 font-mono">
                   {rating.toFixed(1)}
+                </span>
+                <span className="text-[10px] text-white/20 font-mono">
+                  (10 reviews)
                 </span>
               </div>
             )}

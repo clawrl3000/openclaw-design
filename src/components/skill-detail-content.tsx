@@ -9,6 +9,7 @@ import { useCart } from "@/context/cart-context";
 import type { Skill } from "@/data/skills";
 import { SKILLS } from "@/data/skills";
 import { getRichContent } from "@/components/rich-content";
+import { ReviewSection } from "@/components/review-section";
 
 // Get related skills based on category and other factors
 function getRelatedSkills(currentSkill: Skill): Skill[] {
@@ -111,31 +112,42 @@ function InCartButton() {
   );
 }
 
-function StarRating({ rating, reviewCount }: { rating: number; reviewCount: number }) {
+function StarRating({ rating }: { rating: number; reviewCount: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={`text-[13px] inline-block ${
-              star <= Math.round(rating) ? "text-[#F59E0B] glow-text-amber" : "text-white/10"
-            }`}
-            style={{
-              animation: star <= Math.round(rating)
-                ? `starAppear 0.35s cubic-bezier(0.68, -0.6, 0.32, 1.6) ${star * 0.08}s both`
-                : undefined,
-            }}
-          >
-            ★
-          </span>
-        ))}
+        {[1, 2, 3, 4, 5].map((star) => {
+          const fill = Math.min(1, Math.max(0, rating - (star - 1)));
+          return (
+            <span
+              key={star}
+              className="text-[13px] inline-block relative"
+              style={{
+                width: "1em",
+                height: "1em",
+                animation: fill > 0
+                  ? `starAppear 0.35s cubic-bezier(0.68, -0.6, 0.32, 1.6) ${star * 0.08}s both`
+                  : undefined,
+              }}
+            >
+              <span className="absolute inset-0 text-white/10">★</span>
+              {fill > 0 && (
+                <span
+                  className="absolute inset-0 text-[#F59E0B] glow-text-amber"
+                  style={{ clipPath: `inset(0 ${(1 - fill) * 100}% 0 0)` }}
+                >
+                  ★
+                </span>
+              )}
+            </span>
+          );
+        })}
       </div>
       <span className="text-[13px] text-white/50 font-mono">
         {rating.toFixed(1)}
       </span>
       <span className="text-[11px] text-white/25 font-mono">
-        ({reviewCount.toLocaleString()} reviews)
+        (10 reviews)
       </span>
     </div>
   );
@@ -446,6 +458,13 @@ export function SkillDetailContent({ skill }: { skill: Skill }) {
           </div>
         </div>
       </main>
+
+      {/* Reviews Section */}
+      <section className="bg-[#0F0A06] py-12 border-t border-white/[0.04]">
+        <div className="max-w-[800px] mx-auto px-4 sm:px-6">
+          <ReviewSection skillSlug={skill.slug} skillName={skill.name} />
+        </div>
+      </section>
 
       {/* Related Skills Section */}
       <section className="bg-[#0A0401] py-16 border-t border-white/[0.04]">
