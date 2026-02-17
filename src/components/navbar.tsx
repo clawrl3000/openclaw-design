@@ -150,7 +150,7 @@ export function SiteNavbar() {
         wrapper: "px-4 sm:px-6",
       }}
     >
-      {/* Left: Logo + Action links */}
+      {/* Left: Logo + Product links */}
       <NavbarContent justify="start" className="flex-1 gap-6">
         <NavbarBrand className="flex-grow-0">
           <Link href="/" className="flex items-center gap-2 group">
@@ -170,10 +170,10 @@ export function SiteNavbar() {
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <Link
-            href="/setup"
-            className="text-sm text-[#FF4D4D]/80 hover:text-[#FF4D4D] transition-colors font-mono font-medium"
+            href="/how-it-works"
+            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
           >
-            Setup
+            How It Works
           </Link>
         </NavbarItem>
       </NavbarContent>
@@ -196,14 +196,14 @@ export function SiteNavbar() {
         </NavbarItem>
       </NavbarContent>
 
-      {/* Right: Info links + Cart + Auth */}
+      {/* Right: Action links + Cart + Auth */}
       <NavbarContent justify="end" className="flex-1 gap-6">
         <NavbarItem className="hidden sm:flex">
           <Link
-            href="/how-it-works"
-            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
+            href="/setup"
+            className="text-sm text-[#FF4D4D]/80 hover:text-[#FF4D4D] transition-colors font-mono font-medium"
           >
-            How It Works
+            Setup
           </Link>
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
