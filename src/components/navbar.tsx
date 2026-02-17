@@ -188,6 +188,14 @@ export function SiteNavbar() {
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <Link
+            href="/setup"
+            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
+          >
+            Setup
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden sm:flex">
+          <Link
             href="/how-it-works"
             className="text-sm text-white/60 hover:text-white transition-colors font-mono"
           >
