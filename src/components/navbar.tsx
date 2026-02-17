@@ -150,21 +150,40 @@ export function SiteNavbar() {
         wrapper: "px-4 sm:px-6",
       }}
     >
-      <NavbarBrand>
-        <Link href="/" className="flex items-center gap-2 group">
-          <ClawIcon className="text-[#FF4D4D] w-7 h-7 group-hover:text-[#F97316] transition-colors" />
-          <span className="font-mono font-bold text-lg tracking-tight text-white">
-            OpenClaw
-          </span>
-        </Link>
-      </NavbarBrand>
+      {/* Left: Logo + Action links */}
+      <NavbarContent justify="start">
+        <NavbarBrand>
+          <Link href="/" className="flex items-center gap-2 group">
+            <ClawIcon className="text-[#FF4D4D] w-7 h-7 group-hover:text-[#F97316] transition-colors" />
+            <span className="font-mono font-bold text-lg tracking-tight text-white">
+              OpenClaw
+            </span>
+          </Link>
+        </NavbarBrand>
+        <NavbarItem className="hidden sm:flex ml-4">
+          <Link
+            href="/#skills"
+            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
+          >
+            All Skills
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden sm:flex">
+          <Link
+            href="/setup"
+            className="text-sm text-[#FF4D4D]/80 hover:text-[#FF4D4D] transition-colors font-mono font-medium"
+          >
+            Setup
+          </Link>
+        </NavbarItem>
+      </NavbarContent>
 
-      <NavbarContent className="hidden sm:flex gap-6" justify="center">
+      {/* Center: Search */}
+      <NavbarContent className="hidden sm:flex" justify="center">
         <NavbarItem>
-          {/* Search bar: rounded-full, dark surface, subtle border, magnifying glass icon per spec */}
           <Input
             classNames={{
-              base: "max-w-[300px]",
+              base: "max-w-[280px]",
               inputWrapper:
                 "bg-[#1E1510] border border-[#2D221C] rounded-full hover:bg-[#1E1510]/80 group-data-[focus=true]:bg-[#1E1510]/80 h-9",
               input: "text-sm text-white/80 placeholder:text-white/40",
@@ -177,23 +196,8 @@ export function SiteNavbar() {
         </NavbarItem>
       </NavbarContent>
 
+      {/* Right: Info links + Cart + Auth */}
       <NavbarContent justify="end">
-        <NavbarItem className="hidden sm:flex">
-          <Link
-            href="/#skills"
-            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
-          >
-            All Skills
-          </Link>
-        </NavbarItem>
-        <NavbarItem className="hidden sm:flex">
-          <Link
-            href="/setup"
-            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
-          >
-            Setup
-          </Link>
-        </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <Link
             href="/how-it-works"
