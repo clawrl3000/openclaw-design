@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Input, Textarea, Switch, Checkbox } from "@heroui/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import JSZip from "jszip";
 
 interface FormData {
@@ -85,21 +85,56 @@ const COMMON_TOOLS = [
   "Custom APIs",
 ];
 
+const STEP_LABELS = [
+  "Personality",
+  "Identity", 
+  "About You",
+  "Tools",
+  "Context",
+  "Download",
+];
+
 function ProgressIndicator({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+  const pct = Math.round((currentStep / (totalSteps - 1)) * 100);
+  
   return (
-    <div className="flex items-center justify-center gap-2 mb-8">
-      {Array.from({ length: totalSteps }, (_, i) => (
+    <div className="mb-8 max-w-[500px] mx-auto">
+      {/* Percentage + label */}
+      <div className="flex justify-between items-center mb-2">
+        <span className="font-mono text-xs text-white/40">
+          Step {currentStep + 1} of {totalSteps} — {STEP_LABELS[currentStep]}
+        </span>
+        <span className="font-mono text-xs text-[#FF4D4D] font-medium">
+          {pct}%
+        </span>
+      </div>
+      
+      {/* Progress bar */}
+      <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
         <div
-          key={i}
-          className={`w-2 h-2 rounded-full transition-colors ${
-            i < currentStep
-              ? "bg-gradient-to-r from-[#FF4D4D] to-[#F97316]"
-              : i === currentStep
-              ? "bg-[#FF4D4D]"
-              : "bg-white/10"
-          }`}
+          className="h-full bg-gradient-to-r from-[#FF4D4D] to-[#F97316] rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${pct}%` }}
         />
-      ))}
+      </div>
+
+      {/* Step dots with checkmarks */}
+      <div className="flex justify-between mt-3">
+        {Array.from({ length: totalSteps }, (_, i) => (
+          <div key={i} className="flex flex-col items-center">
+            <div
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-bold transition-all duration-300 ${
+                i < currentStep
+                  ? "bg-[#FF4D4D] text-white scale-100"
+                  : i === currentStep
+                  ? "bg-[#FF4D4D]/20 text-[#FF4D4D] border border-[#FF4D4D] scale-110"
+                  : "bg-white/[0.06] text-white/20"
+              }`}
+            >
+              {i < currentStep ? "✓" : i + 1}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -359,16 +394,25 @@ Keep it concise but informative. This gets loaded at the start of each main sess
                 </label>
                 <div className="grid gap-2">
                   {COMMUNICATION_STYLES.map((style) => (
-                    <label key={style.value} className="flex items-center gap-3 p-3 rounded-lg bg-[#1E1510]/40 border border-white/[0.06] hover:bg-[#1E1510]/60 cursor-pointer transition-colors">
+                    <label
+                      key={style.value}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                        formData.communicationStyle === style.value
+                          ? "bg-[#FF4D4D]/10 border-[#FF4D4D]/30 shadow-[0_0_12px_rgba(255,77,77,0.08)]"
+                          : "bg-[#1E1510]/40 border-white/[0.06] hover:bg-[#1E1510]/60"
+                      }`}
+                    >
                       <input
                         type="radio"
                         name="communicationStyle"
                         value={style.value}
                         checked={formData.communicationStyle === style.value}
                         onChange={(e) => updateFormData({ communicationStyle: e.target.value })}
-                        className="w-4 h-4 text-[#FF4D4D]"
+                        className="w-4 h-4 text-[#FF4D4D] accent-[#FF4D4D]"
                       />
-                      <span className="text-white/80">{style.label}</span>
+                      <span className={`transition-colors ${
+                        formData.communicationStyle === style.value ? "text-white" : "text-white/80"
+                      }`}>{style.label}</span>
                     </label>
                   ))}
                 </div>
@@ -438,16 +482,25 @@ Keep it concise but informative. This gets loaded at the start of each main sess
                 </label>
                 <div className="grid gap-2">
                   {ROLES.map((role) => (
-                    <label key={role.value} className="flex items-center gap-3 p-3 rounded-lg bg-[#1E1510]/40 border border-white/[0.06] hover:bg-[#1E1510]/60 cursor-pointer transition-colors">
+                    <label
+                      key={role.value}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                        formData.role === role.value
+                          ? "bg-[#FF4D4D]/10 border-[#FF4D4D]/30 shadow-[0_0_12px_rgba(255,77,77,0.08)]"
+                          : "bg-[#1E1510]/40 border-white/[0.06] hover:bg-[#1E1510]/60"
+                      }`}
+                    >
                       <input
                         type="radio"
                         name="role"
                         value={role.value}
                         checked={formData.role === role.value}
                         onChange={(e) => updateFormData({ role: e.target.value })}
-                        className="w-4 h-4 text-[#FF4D4D]"
+                        className="w-4 h-4 text-[#FF4D4D] accent-[#FF4D4D]"
                       />
-                      <span className="text-white/80">{role.label}</span>
+                      <span className={`transition-colors ${
+                        formData.role === role.value ? "text-white" : "text-white/80"
+                      }`}>{role.label}</span>
                     </label>
                   ))}
                 </div>
@@ -589,7 +642,14 @@ Keep it concise but informative. This gets loaded at the start of each main sess
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {COMMON_TOOLS.map((tool) => (
-                    <label key={tool} className="flex items-center gap-3 p-3 rounded-lg bg-[#1E1510]/40 border border-white/[0.06] hover:bg-[#1E1510]/60 cursor-pointer transition-colors">
+                    <label
+                      key={tool}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 active:scale-[0.97] ${
+                        formData.selectedTools.includes(tool)
+                          ? "bg-[#FF4D4D]/10 border-[#FF4D4D]/30 shadow-[0_0_12px_rgba(255,77,77,0.08)]"
+                          : "bg-[#1E1510]/40 border-white/[0.06] hover:bg-[#1E1510]/60"
+                      }`}
+                    >
                       <Checkbox
                         isSelected={formData.selectedTools.includes(tool)}
                         onValueChange={(checked) => {
@@ -603,7 +663,9 @@ Keep it concise but informative. This gets loaded at the start of each main sess
                           wrapper: "before:border-white/30 after:bg-[#FF4D4D]",
                         }}
                       />
-                      <span className="text-white/80 text-sm">{tool}</span>
+                      <span className={`text-sm transition-colors ${
+                        formData.selectedTools.includes(tool) ? "text-white" : "text-white/80"
+                      }`}>{tool}</span>
                     </label>
                   ))}
                 </div>
@@ -820,39 +882,95 @@ Keep it concise but informative. This gets loaded at the start of each main sess
     }
   };
 
+  const [transitioning, setTransitioning] = useState(false);
+  const [direction, setDirection] = useState<"next" | "back">("next");
+  const [downloaded, setDownloaded] = useState(false);
+
+  const animatedNext = () => {
+    setDirection("next");
+    setTransitioning(true);
+    setTimeout(() => {
+      nextStep();
+      setTransitioning(false);
+    }, 200);
+  };
+
+  const animatedPrev = () => {
+    setDirection("back");
+    setTransitioning(true);
+    setTimeout(() => {
+      prevStep();
+      setTransitioning(false);
+    }, 200);
+  };
+
+  const handleDownload = async () => {
+    await downloadZip();
+    setDownloaded(true);
+  };
+
   return (
     <div className="max-w-[700px] mx-auto">
       <ProgressIndicator currentStep={currentStep} totalSteps={6} />
       
-      <div className="bg-[#1E1510]/40 rounded-2xl border border-white/[0.04] p-8">
-        {renderStep()}
+      <div className="bg-[#1E1510]/40 rounded-2xl border border-white/[0.04] p-8 relative overflow-hidden">
+        {/* Step completion flash */}
+        {transitioning && direction === "next" && (
+          <div className="absolute inset-0 bg-[#FF4D4D]/5 animate-pulse pointer-events-none z-10 rounded-2xl" />
+        )}
+
+        {/* Content with slide transition */}
+        <div
+          className={`transition-all duration-200 ${
+            transitioning
+              ? direction === "next"
+                ? "opacity-0 translate-x-4"
+                : "opacity-0 -translate-x-4"
+              : "opacity-100 translate-x-0"
+          }`}
+        >
+          {renderStep()}
+        </div>
         
         <div className="flex justify-between mt-8 pt-6 border-t border-white/[0.06]">
           <Button
-            onClick={prevStep}
+            onClick={animatedPrev}
             isDisabled={currentStep === 0}
             variant="flat"
             className="font-mono text-white/60 bg-white/5 hover:bg-white/10 disabled:opacity-30"
           >
-            Back
+            ← Back
           </Button>
           
           {currentStep < 5 ? (
             <Button
-              onClick={nextStep}
-              className="btn-coral font-mono px-6"
+              onClick={animatedNext}
+              className="btn-coral font-mono px-6 group"
             >
-              Next
+              Next →
             </Button>
           ) : (
             <Button
-              onClick={downloadZip}
-              className="btn-coral font-mono px-6"
+              onClick={handleDownload}
+              className={`font-mono px-6 transition-all duration-300 ${
+                downloaded
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : "btn-coral"
+              }`}
             >
-              Download Again
+              {downloaded ? "✓ Downloaded!" : "⬇ Download All Files"}
             </Button>
           )}
         </div>
+
+        {/* Completion celebration */}
+        {currentStep === 5 && (
+          <div className="mt-4 text-center">
+            <p className="font-mono text-xs text-white/30 animate-pulse">
+              🎉 Your AI employee is ready to start working
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -4,9 +4,9 @@ import { Footer } from "@/components/footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Setup Wizard — Build Your AI Employee in 5 Minutes | OpenClaw",
+  title: "Setup Wizard — Build Your AI Employee in 5 Minutes",
   description:
-    "Create your OpenClaw agent configuration files in 5 minutes. Generate SOUL.md, USER.md, AGENTS.md, TOOLS.md, and MEMORY.md — the 5 files that turn a forgetful AI into a reliable employee that knows your business.",
+    "Generate SOUL.md, USER.md, AGENTS.md, TOOLS.md and MEMORY.md for OpenClaw. Turn a forgetful AI into a reliable employee that knows your business.",
   keywords: [
     "OpenClaw setup",
     "OpenClaw configuration",
@@ -28,6 +28,14 @@ export const metadata: Metadata = {
     url: "https://openclaw.design/setup",
     type: "website",
     siteName: "OpenClaw",
+    images: [
+      {
+        url: "https://openclaw.design/og-setup.png",
+        width: 1200,
+        height: 630,
+        alt: "OpenClaw Setup Wizard — Build Your AI Employee in 5 Minutes",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
