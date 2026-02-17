@@ -4,30 +4,70 @@ import { Footer } from "@/components/footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Setup — Build Your AI Employee",
+  title: "Setup Wizard — Build Your AI Employee in 5 Minutes | OpenClaw",
   description:
-    "Create your OpenClaw agent configuration files in 5 minutes. Answer a few questions and get SOUL.md, USER.md, AGENTS.md, TOOLS.md, and MEMORY.md ready to use.",
+    "Create your OpenClaw agent configuration files in 5 minutes. Generate SOUL.md, USER.md, AGENTS.md, TOOLS.md, and MEMORY.md — the 5 files that turn a forgetful AI into a reliable employee that knows your business.",
+  keywords: [
+    "OpenClaw setup",
+    "OpenClaw configuration",
+    "AI agent setup",
+    "AI employee",
+    "SOUL.md",
+    "AGENTS.md",
+    "OpenClaw memory",
+    "AI agent memory",
+    "OpenClaw getting started",
+    "AI assistant configuration",
+    "claude agent setup",
+    "openclaw tutorial",
+  ],
   openGraph: {
-    title: "Setup — Build Your AI Employee",
+    title: "Build Your AI Employee in 5 Minutes — OpenClaw Setup Wizard",
     description:
-      "Answer a few questions. Get configuration files ready to drop into OpenClaw.",
+      "Answer a few questions, download 5 configuration files, and turn OpenClaw into an AI employee that knows your business, remembers your decisions, and never makes the same mistake twice.",
     url: "https://openclaw.design/setup",
     type: "website",
+    siteName: "OpenClaw",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Setup — Build Your AI Employee",
+    title: "Build Your AI Employee in 5 Minutes",
     description:
-      "Answer a few questions. Get configuration files ready to drop into OpenClaw.",
+      "Stop configuring. Start onboarding. The OpenClaw Setup Wizard generates your agent's personality, memory, and tools config in one shot.",
   },
   alternates: {
     canonical: "https://openclaw.design/setup",
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "OpenClaw Setup Wizard",
+  description:
+    "Generate AI agent configuration files (SOUL.md, USER.md, AGENTS.md, TOOLS.md, MEMORY.md) for OpenClaw in 5 minutes.",
+  url: "https://openclaw.design/setup",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "OpenClaw",
+    url: "https://openclaw.design",
+  },
+};
+
 export default function SetupPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteNavbar />
 
       <main className="flex-1 px-4 sm:px-6 pt-28 pb-20">

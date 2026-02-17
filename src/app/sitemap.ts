@@ -23,16 +23,52 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: `${baseUrl}/setup`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/learn`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/learn/how-openclaw-works`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/learn/lessons-from-210-hours`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/community`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
   ];
 
   // Skill pages (will be dynamic from DB later)
   const skills = [
+    "kalshi-prediction-markets",
+    "openclaw-memory-system",
     "smart-email-responder",
     "sports-odds-analyzer",
     "github-pr-reviewer",
-    "social-content-engine",
+    "content-factory",
     "smart-home-orchestrator",
     "meeting-notes-pro",
+    "market-recon",
+    "morning-command-center",
+    "autonomous-goal-engine",
+    "app-forge",
   ];
 
   const skillPages: MetadataRoute.Sitemap = skills.map((slug) => ({

@@ -751,6 +751,7 @@ Keep it concise but informative. This gets loaded at the start of each main sess
                 ))}
               </div>
 
+              {/* Next Steps */}
               <div className="bg-gradient-to-r from-[#FF4D4D]/10 to-[#F97316]/10 rounded-lg p-6 border border-[#FF4D4D]/20 text-center">
                 <h3 className="font-mono text-lg font-bold text-white mb-2">Next Steps</h3>
                 <p className="text-white/70 mb-4">
@@ -760,25 +761,54 @@ Keep it concise but informative. This gets loaded at the start of each main sess
                   <br />
                   3. Start your first conversation!
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button
-                    as="a"
-                    href="https://docs.openclaw.com/getting-started"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="flat"
-                    className="font-mono text-white/80 bg-white/10 hover:bg-white/20"
-                  >
-                    View Installation Docs
-                  </Button>
-                  <Button
-                    as="a"
-                    href="/skills"
-                    variant="flat"
-                    className="font-mono text-[#FF4D4D] bg-[#FF4D4D]/10 hover:bg-[#FF4D4D]/20 border border-[#FF4D4D]/30"
-                  >
-                    Browse Skills →
-                  </Button>
+                <Button
+                  as="a"
+                  href="https://docs.openclaw.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="flat"
+                  className="font-mono text-white/80 bg-white/10 hover:bg-white/20"
+                >
+                  View Installation Docs →
+                </Button>
+              </div>
+
+              {/* Skills Upsell */}
+              <div className="bg-[#1E1510]/60 rounded-lg p-6 border border-white/[0.06]">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-[#FF4D4D]/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-lg">⚡</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-mono text-lg font-bold text-white mb-1">
+                      Supercharge Your Agent with Skills
+                    </h3>
+                    <p className="text-white/50 text-sm mb-4">
+                      Your config files define who your agent is. Skills teach it what to do.
+                      SEO audits, email automation, GitHub workflows, browser control, and more — 
+                      plug-and-play instruction sets that give your agent new abilities instantly.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {["SEO Optimizer", "Smart Email", "GitHub PR", "Browser Automation", "Weather", "Whisper Transcription"].map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-2 py-1 bg-white/5 rounded text-xs font-mono text-white/40 border border-white/[0.06]"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      <span className="px-2 py-1 text-xs font-mono text-[#FF4D4D]/60">
+                        +12 more
+                      </span>
+                    </div>
+                    <Button
+                      as="a"
+                      href="/skills"
+                      className="font-mono text-white bg-gradient-to-r from-[#FF4D4D] to-[#F97316] hover:opacity-90 font-medium"
+                    >
+                      Browse Skills →
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
