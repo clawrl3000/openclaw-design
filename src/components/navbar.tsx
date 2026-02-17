@@ -150,8 +150,8 @@ export function SiteNavbar() {
         wrapper: "px-4 sm:px-6",
       }}
     >
-      {/* Left: Logo + Product links */}
-      <NavbarContent justify="start" className="flex-1 gap-6">
+      {/* Left: Logo + Product links + Search */}
+      <NavbarContent justify="start" className="flex-1 gap-5">
         <NavbarBrand className="flex-grow-0">
           <Link href="/" className="flex items-center gap-2 group">
             <ClawIcon className="text-[#FF4D4D] w-7 h-7 group-hover:text-[#F97316] transition-colors" />
@@ -176,14 +176,10 @@ export function SiteNavbar() {
             How It Works
           </Link>
         </NavbarItem>
-      </NavbarContent>
-
-      {/* Center: Search */}
-      <NavbarContent className="hidden sm:flex flex-1" justify="center">
-        <NavbarItem>
+        <NavbarItem className="hidden sm:flex">
           <Input
             classNames={{
-              base: "max-w-[280px] w-[280px]",
+              base: "max-w-[220px] w-[220px]",
               inputWrapper:
                 "bg-[#1E1510] border border-[#2D221C] rounded-full hover:bg-[#1E1510]/80 group-data-[focus=true]:bg-[#1E1510]/80 h-9",
               input: "text-sm text-white/80 placeholder:text-white/40",
@@ -197,7 +193,7 @@ export function SiteNavbar() {
       </NavbarContent>
 
       {/* Right: Action links + Cart + Auth */}
-      <NavbarContent justify="end" className="flex-1 gap-6">
+      <NavbarContent justify="end" className="gap-5">
         <NavbarItem className="hidden sm:flex">
           <Link
             href="/setup"
