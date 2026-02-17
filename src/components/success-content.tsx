@@ -209,69 +209,11 @@ export function SuccessContent() {
             You&apos;re in!
           </h1>
           <p className="font-mono text-sm text-white/50 leading-relaxed max-w-sm mx-auto">
-            Your skills are ready! Get GitHub repo access for source code, issues, and updates.
+            Your skills are ready to download. Want source code access and updates? Add your GitHub username below.
           </p>
         </div>
 
-        {/* GitHub username form */}
-        {showGithubForm && (
-          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <GitHubIcon />
-              <h2 className="font-mono text-lg font-semibold text-white">
-                Get GitHub repo access
-              </h2>
-            </div>
-            <p className="font-mono text-sm text-white/60 leading-relaxed">
-              Enter your GitHub username to receive invitations to the private repositories. 
-              This gives you access to the source code, ability to file issues, and automatic updates.
-            </p>
-            
-            <form onSubmit={handleGithubSubmit} className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="github-username"
-                  value={githubUsername}
-                  onChange={(e) => setGithubUsername(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-[#0A0604] border border-[#2D221C] rounded-lg text-white font-mono text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FF4D4D]/50"
-                  disabled={githubLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={githubLoading || !githubUsername.trim()}
-                  className="px-4 py-2 bg-[#FF4D4D] hover:bg-[#FF4D4D]/80 disabled:bg-[#FF4D4D]/30 text-white font-mono text-sm rounded-lg transition-colors"
-                >
-                  {githubLoading ? "Sending..." : "Send invites"}
-                </button>
-              </div>
-              {githubMessage && (
-                <p className="font-mono text-xs text-emerald-400 mt-2">
-                  {githubMessage}
-                </p>
-              )}
-            </form>
-          </div>
-        )}
-
-        {/* GitHub username display */}
-        {currentGithubUsername && !showGithubForm && (
-          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4">
-            <div className="flex items-center gap-3">
-              <GitHubIcon />
-              <div>
-                <p className="font-mono text-sm text-white">
-                  GitHub: <span className="text-emerald-400">{currentGithubUsername}</span>
-                </p>
-                <p className="font-mono text-xs text-white/40">
-                  Check your email for repository invitations
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Purchased skills */}
+        {/* Purchased skills — download first */}
         {session?.skills && session.skills.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
@@ -312,63 +254,83 @@ export function SuccessContent() {
           </div>
         )}
 
+        {/* GitHub — optional enhancement */}
+        {showGithubForm && (
+          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <GitHubIcon />
+              <h2 className="font-mono text-lg font-semibold text-white">
+                Want repo access too? <span className="text-white/40 text-sm font-normal">(optional)</span>
+              </h2>
+            </div>
+            <p className="font-mono text-sm text-white/60 leading-relaxed">
+              Add your GitHub username to also get invited to the private repositories — 
+              source code, issues, and automatic updates.
+            </p>
+            
+            <form onSubmit={handleGithubSubmit} className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="github-username"
+                  value={githubUsername}
+                  onChange={(e) => setGithubUsername(e.target.value)}
+                  className="flex-1 px-3 py-2 bg-[#0A0604] border border-[#2D221C] rounded-lg text-white font-mono text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FF4D4D]/50"
+                  disabled={githubLoading}
+                />
+                <button
+                  type="submit"
+                  disabled={githubLoading || !githubUsername.trim()}
+                  className="px-4 py-2 bg-[#FF4D4D] hover:bg-[#FF4D4D]/80 disabled:bg-[#FF4D4D]/30 text-white font-mono text-sm rounded-lg transition-colors"
+                >
+                  {githubLoading ? "Sending..." : "Send invites"}
+                </button>
+              </div>
+              {githubMessage && (
+                <p className="font-mono text-xs text-emerald-400 mt-2">
+                  {githubMessage}
+                </p>
+              )}
+            </form>
+          </div>
+        )}
+
+        {currentGithubUsername && !showGithubForm && (
+          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4">
+            <div className="flex items-center gap-3">
+              <GitHubIcon />
+              <div>
+                <p className="font-mono text-sm text-white">
+                  GitHub: <span className="text-emerald-400">{currentGithubUsername}</span>
+                </p>
+                <p className="font-mono text-xs text-white/40">
+                  Check your email for repository invitations
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Installation Guide */}
         <div className="space-y-4">
           <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
             Get Your Skills Installed (30 Seconds)
           </h2>
           
-          {/* GitHub Method (Premium) */}
-          {currentGithubUsername && session?.skills?.some(s => s.id) && (
-            <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  1
-                </div>
-                <h3 className="font-mono text-sm font-semibold text-white">
-                  🎉 Premium: GitHub Repository Access
-                </h3>
-              </div>
-              
-              <div className="pl-9 space-y-3">
-                <div className="space-y-2">
-                  <p className="font-mono text-sm text-emerald-400 flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                    </svg>
-                    GitHub invitations sent to @{currentGithubUsername}
-                  </p>
-                  <ol className="font-mono text-xs text-white/60 space-y-1 pl-4 list-decimal">
-                    <li>Check your email for GitHub repository invitations</li>
-                    <li>Accept the invitations (one per skill purchased)</li>
-                    <li>Visit each repository — every README has instant setup steps</li>
-                    <li>Copy the SKILL.md file to your agent&apos;s skills/ folder</li>
-                    <li>Restart your agent → Done!</li>
-                  </ol>
-                </div>
-                
-                <div className="flex gap-2 text-xs">
-                  <span className="text-white/40">⭐ Benefits:</span>
-                  <span className="text-white/60">Source code access • File issues • Get updates • Community support</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Direct Download Method */}
+          {/* Direct Download Method — always primary */}
           <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 bg-[#FF4D4D] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                {currentGithubUsername ? "2" : "1"}
+                1
               </div>
               <h3 className="font-mono text-sm font-semibold text-white">
-                {currentGithubUsername ? "Backup: " : ""}Direct Download
+                Download &amp; Install
               </h3>
             </div>
             
             <div className="pl-9 space-y-3">
               <ol className="font-mono text-xs text-white/60 space-y-1 list-decimal">
-                <li>Click "Download" on each skill below</li>
+                <li>Click &quot;Download&quot; on each skill above</li>
                 <li>Extract the .skill files</li>
                 <li>Copy SKILL.md files to your agent&apos;s skills/ folder</li>
                 <li>Restart your agent</li>
@@ -385,6 +347,41 @@ export function SuccessContent() {
               </div>
             </div>
           </div>
+
+          {/* GitHub Method — shown if user connected GitHub */}
+          {currentGithubUsername && session?.skills?.some(s => s.id) && (
+            <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  2
+                </div>
+                <h3 className="font-mono text-sm font-semibold text-white">
+                  GitHub Repository Access
+                </h3>
+              </div>
+              
+              <div className="pl-9 space-y-3">
+                <div className="space-y-2">
+                  <p className="font-mono text-sm text-emerald-400 flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                    </svg>
+                    Invitations sent to @{currentGithubUsername}
+                  </p>
+                  <ol className="font-mono text-xs text-white/60 space-y-1 pl-4 list-decimal">
+                    <li>Check your email for GitHub repository invitations</li>
+                    <li>Accept the invitations (one per skill purchased)</li>
+                    <li>Visit each repository for source code and updates</li>
+                  </ol>
+                </div>
+                
+                <div className="flex gap-2 text-xs">
+                  <span className="text-white/40">⭐ Bonus:</span>
+                  <span className="text-white/60">Source code • File issues • Auto-updates • Community support</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Need Help */}
           <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">

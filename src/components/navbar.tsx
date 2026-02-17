@@ -196,10 +196,18 @@ export function SiteNavbar() {
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <Link
-            href="/how-openclaw-works"
+            href="/learn"
             className="text-sm text-white/60 hover:text-white transition-colors font-mono"
           >
-            Architecture
+            Learn
+          </Link>
+        </NavbarItem>
+        <NavbarItem className="hidden sm:flex">
+          <Link
+            href="/community"
+            className="text-sm text-white/60 hover:text-white transition-colors font-mono"
+          >
+            Community
           </Link>
         </NavbarItem>
         <NavbarItem>

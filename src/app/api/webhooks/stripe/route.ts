@@ -176,5 +176,76 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Handle community subscription events
+  if (event.type === "customer.subscription.created") {
+    const subscription = event.data.object as Stripe.Subscription;
+    const metadata = subscription.metadata || {};
+    const userId = metadata.user_id;
+    const productType = metadata.product_type;
+
+    if (userId && productType === "community") {
+      console.log(`[Webhook] New community member: user ${userId}, subscription ${subscription.id}`);
+      
+      try {
+        // Update user's Stripe customer ID if not already set
+        if (subscription.customer && typeof subscription.customer === 'string') {
+          await db
+            .update(users)
+            .set({ stripe_customer_id: subscription.customer })
+            .where(eq(users.id, userId));
+        }
+
+        // TODO: Add Discord role to user when Discord integration is ready
+        console.log(`[Webhook] Community subscription created for user ${userId}`);
+      } catch (error) {
+        console.error(`[Webhook] Error processing community subscription creation:`, error);
+      }
+    }
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+    const metadata = subscription.metadata || {};
+    const userId = metadata.user_id;
+    const productType = metadata.product_type;
+
+    if (userId && productType === "community") {
+      console.log(`[Webhook] Community subscription cancelled: user ${userId}, subscription ${subscription.id}`);
+      
+      try {
+        // TODO: Remove Discord role from user when Discord integration is ready
+        console.log(`[Webhook] Community access revoked for user ${userId}`);
+      } catch (error) {
+        console.error(`[Webhook] Error processing community subscription cancellation:`, error);
+      }
+    }
+  }
+
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice;
+    
+    if (invoice.subscription) {
+      try {
+        // Get subscription to check if it's a community subscription
+        const subscription = await getStripe().subscriptions.retrieve(
+          invoice.subscription as string
+        );
+        
+        const metadata = subscription.metadata || {};
+        const userId = metadata.user_id;
+        const productType = metadata.product_type;
+
+        if (userId && productType === "community") {
+          console.log(`[Webhook] Payment failed for community subscription: user ${userId}, subscription ${subscription.id}`);
+          
+          // TODO: Send warning notification to user and potentially suspend Discord access
+          console.log(`[Webhook] Community payment failed for user ${userId}`);
+        }
+      } catch (error) {
+        console.error(`[Webhook] Error processing failed payment:`, error);
+      }
+    }
+  }
+
   return NextResponse.json({ received: true });
 }
