@@ -71,6 +71,14 @@ const articles: Article[] = [
     readTime: "18 min read",
     date: "Feb 16, 2026",
     image: "/images/lessons-from-210-hours/hero-experience.webp"
+  },
+  {
+    slug: "20-use-cases",
+    title: "20 Real-World OpenClaw Use Cases",
+    description: "From autonomous coding to smart home control — verified use cases from real OpenClaw users with specific tools, costs, and workflows.",
+    readTime: "15 min read",
+    date: "Feb 17, 2026",
+    image: "/images/20-use-cases/hero-use-cases.webp"
   }
 ];
 

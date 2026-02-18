@@ -67,7 +67,7 @@ const collectionJsonLd = {
   },
   mainEntity: {
     "@type": "ItemList",
-    numberOfItems: 2,
+    numberOfItems: 3,
     itemListElement: [
       {
         "@type": "Article",
@@ -100,6 +100,19 @@ const collectionJsonLd = {
             name: "OpenClaw Community",
           },
         ],
+      },
+      {
+        "@type": "Article",
+        position: 3,
+        name: "20 Real-World OpenClaw Use Cases",
+        description: "From autonomous coding to smart home control — verified use cases from real OpenClaw users with specific tools, costs, and workflows.",
+        url: "https://openclaw.design/learn/20-use-cases",
+        image: "https://openclaw.design/images/20-use-cases/hero-use-cases.webp",
+        datePublished: "2026-02-17T00:00:00.000Z",
+        author: {
+          "@type": "Organization",
+          name: "OpenClaw",
+        },
       },
     ],
   },
