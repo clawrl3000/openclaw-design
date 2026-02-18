@@ -145,9 +145,8 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script
-          defer
-          data-domain="openclaw.design"
-          src={process.env.NEXT_PUBLIC_PLAUSIBLE_SRC || "https://plausible.io/js/script.js"}
+          async
+          src="https://plausible.io/js/pa-KMHQhX-JPzNS0G5UpA5dR.js"
         />
         <script
           type="application/ld+json"
