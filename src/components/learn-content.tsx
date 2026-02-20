@@ -73,6 +73,14 @@ const articles: Article[] = [
     image: "/images/lessons-from-210-hours/hero-experience.webp"
   },
   {
+    slug: "5-things-after-setup",
+    title: "5 Things to Do Right After Setting Up OpenClaw",
+    description: "Turn your OpenClaw from a glorified ChatGPT into an autonomous AI employee. Brain dump, tool connections, mission control, mission statement, and proactive expectations.",
+    readTime: "10 min read",
+    date: "Feb 21, 2026",
+    image: "/images/5-things/hero-setup.webp"
+  },
+  {
     slug: "20-use-cases",
     title: "20 Real-World OpenClaw Use Cases",
     description: "From autonomous coding to smart home control — verified use cases from real OpenClaw users with specific tools, costs, and workflows.",

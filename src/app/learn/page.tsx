@@ -67,7 +67,7 @@ const collectionJsonLd = {
   },
   mainEntity: {
     "@type": "ItemList",
-    numberOfItems: 3,
+    numberOfItems: 4,
     itemListElement: [
       {
         "@type": "Article",
@@ -104,6 +104,19 @@ const collectionJsonLd = {
       {
         "@type": "Article",
         position: 3,
+        name: "5 Things to Do Right After Setting Up OpenClaw",
+        description: "Turn your OpenClaw from a glorified ChatGPT into an autonomous AI employee with brain dumps, tool connections, mission control, a mission statement, and proactive expectations.",
+        url: "https://openclaw.design/learn/5-things-after-setup",
+        image: "https://openclaw.design/images/5-things/hero-setup.webp",
+        datePublished: "2026-02-21T00:00:00.000Z",
+        author: {
+          "@type": "Organization",
+          name: "OpenClaw",
+        },
+      },
+      {
+        "@type": "Article",
+        position: 4,
         name: "20 Real-World OpenClaw Use Cases",
         description: "From autonomous coding to smart home control — verified use cases from real OpenClaw users with specific tools, costs, and workflows.",
         url: "https://openclaw.design/learn/20-use-cases",
