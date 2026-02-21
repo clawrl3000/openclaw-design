@@ -33,15 +33,11 @@ interface CartContextValue {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  /** GitHub username for delivery */
-  githubUsername: string;
-  setGithubUsername: (username: string) => void;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "openclaw-cart";
-const GH_USERNAME_KEY = "openclaw-gh-username";
 
 function loadCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -65,15 +61,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [githubUsername, setGithubUsernameState] = useState("");
 
   // Hydrate from localStorage after mount
   useEffect(() => {
     setItems(loadCart());
-    try {
-      const savedGh = localStorage.getItem(GH_USERNAME_KEY);
-      if (savedGh) setGithubUsernameState(savedGh);
-    } catch {}
     setHydrated(true);
   }, []);
 
@@ -119,13 +110,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const closeCart = useCallback(() => setIsOpen(false), []);
   const toggleCart = useCallback(() => setIsOpen((p) => !p), []);
 
-  const setGithubUsername = useCallback((username: string) => {
-    setGithubUsernameState(username);
-    try {
-      localStorage.setItem(GH_USERNAME_KEY, username);
-    } catch {}
-  }, []);
-
   const value = useMemo<CartContextValue>(
     () => ({
       items,
@@ -139,10 +123,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       openCart,
       closeCart,
       toggleCart,
-      githubUsername,
-      setGithubUsername,
     }),
-    [items, count, total, addItem, removeItem, clearCart, isInCart, isOpen, openCart, closeCart, toggleCart, githubUsername, setGithubUsername]
+    [items, count, total, addItem, removeItem, clearCart, isInCart, isOpen, openCart, closeCart, toggleCart]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

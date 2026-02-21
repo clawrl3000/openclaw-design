@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth"
 import GitHubProvider from "next-auth/providers/github"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { db } from "@/db"
+import { eq } from "drizzle-orm"
 import {
   accounts,
   sessions,
@@ -22,10 +23,40 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
+  events: {
+    async signIn({ user, profile }) {
+      // Save GitHub username from OAuth profile after user is created/found in DB
+      if (profile && user.id) {
+        const ghProfile = profile as { login?: string }
+        if (ghProfile.login) {
+          try {
+            await db
+              .update(users)
+              .set({ github_username: ghProfile.login })
+              .where(eq(users.id, user.id))
+          } catch (err) {
+            console.error("Failed to save GitHub username:", err)
+          }
+        }
+      }
+    },
+  },
   callbacks: {
-    session({ session, user }) {
-      // Add user id to session
+    async session({ session, user }) {
+      // Add user id and GitHub username to session
       session.user.id = user.id
+
+      // Fetch GitHub username from DB
+      const [dbUser] = await db
+        .select({ github_username: users.github_username })
+        .from(users)
+        .where(eq(users.id, user.id))
+        .limit(1)
+      
+      if (dbUser?.github_username) {
+        (session.user as Record<string, unknown>).githubUsername = dbUser.github_username
+      }
+
       return session
     },
   },

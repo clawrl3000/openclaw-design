@@ -11,7 +11,8 @@ function getStripe() {
 }
 
 interface CheckoutItem {
-  skillId: string;
+  slug?: string;
+  skillId?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -43,15 +44,25 @@ export async function POST(req: NextRequest) {
     const skillIds: string[] = [];
 
     for (const item of items) {
-      const [skill] = await db
-        .select()
-        .from(skills)
-        .where(eq(skills.id, item.skillId))
-        .limit(1);
+      // Support lookup by slug or skillId
+      let skill;
+      if (item.slug) {
+        [skill] = await db
+          .select()
+          .from(skills)
+          .where(eq(skills.slug, item.slug))
+          .limit(1);
+      } else if (item.skillId) {
+        [skill] = await db
+          .select()
+          .from(skills)
+          .where(eq(skills.id, item.skillId))
+          .limit(1);
+      }
 
       if (!skill) {
         return NextResponse.json(
-          { error: `Unknown skill: ${item.skillId}` },
+          { error: `Unknown skill: ${item.slug || item.skillId}` },
           { status: 400 }
         );
       }
@@ -91,7 +102,7 @@ export async function POST(req: NextRequest) {
         skill_ids: skillIds.join(","),
       },
       success_url: `${siteUrl}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/`,
+      cancel_url: `${siteUrl}/browse`,
       payment_intent_data: {
         metadata: {
           user_id: session.user.id,

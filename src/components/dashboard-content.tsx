@@ -86,7 +86,6 @@ interface DashboardContentProps {
 export function DashboardContent({ user }: DashboardContentProps) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [githubUsername, setGithubUsername] = useState<string>("");
   const [showGithubForm, setShowGithubForm] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
@@ -111,33 +110,6 @@ export function DashboardContent({ user }: DashboardContentProps) {
 
     fetchUserData();
   }, []);
-
-  const handleDownload = async (skillId: string, skillSlug: string) => {
-    setDownloadingId(skillId);
-    
-    try {
-      // In a real app, this would hit your download API endpoint
-      const response = await fetch(`/api/downloads/${skillId}`);
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${skillSlug}.skill`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        console.error('Download failed');
-      }
-    } catch (error) {
-      console.error('Download error:', error);
-    } finally {
-      setDownloadingId(null);
-    }
-  };
 
   const formatPrice = (cents: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -198,7 +170,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
             My Dashboard
           </h1>
           <p className="text-gray-400 text-lg">
-            Manage your purchased skills and downloads
+            Manage your purchased skills and GitHub access
           </p>
         </div>
 
@@ -392,38 +364,38 @@ export function DashboardContent({ user }: DashboardContentProps) {
                   </div>
                 )}
 
-                {/* Download Method */}
+                {/* Install from GitHub */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
                       {userData?.github_username ? "2" : "1"}
                     </div>
                     <div>
-                      <h3 className="text-white font-medium">⬇️ Direct Download</h3>
-                      <p className="text-gray-400 text-sm">Quick installation from ZIP files</p>
+                      <h3 className="text-white font-medium">📦 Install from GitHub</h3>
+                      <p className="text-gray-400 text-sm">Clone or download from your private repo</p>
                     </div>
                   </div>
                   
                   <div className="ml-11 space-y-3 bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
                     <ol className="text-gray-300 text-sm space-y-2 list-decimal list-inside">
-                      <li><strong>Click "Download ZIP"</strong> for each skill below</li>
-                      <li><strong>Extract the files</strong> from each download</li>
-                      <li><strong>Find SKILL.md</strong> in each extracted folder</li>
-                      <li><strong>Copy to your agent</strong> skills/ folder</li>
+                      <li><strong>Accept the GitHub invitation</strong> from your email or GitHub notifications</li>
+                      <li><strong>Clone the repo</strong> or download as ZIP from GitHub</li>
+                      <li><strong>Copy SKILL.md + scripts</strong> to your agent&apos;s skills/ folder</li>
                       <li><strong>Restart your agent</strong></li>
                     </ol>
                     
                     <div className="bg-gray-800 rounded p-3 font-mono text-xs text-green-400">
                       <div className="flex items-center justify-between">
-                        <span># Quick install command:</span>
+                        <span># Clone and install:</span>
                         <button
-                          onClick={() => navigator.clipboard.writeText("cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/")}
+                          onClick={() => navigator.clipboard.writeText("git clone https://github.com/openclaw-design/SKILL-NAME.git && cp -r SKILL-NAME/ ~/your-agent/skills/")}
                           className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600"
                         >
                           Copy
                         </button>
                       </div>
-                      <div className="mt-1">cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/</div>
+                      <div className="mt-1">git clone https://github.com/openclaw-design/SKILL-NAME.git</div>
+                      <div>cp -r SKILL-NAME/ ~/your-agent/skills/</div>
                     </div>
                   </div>
                 </div>
@@ -568,18 +540,9 @@ export function DashboardContent({ user }: DashboardContentProps) {
                             >
                               Get from GitHub
                             </Button>
-                          ) : null}
-                          <Button
-                            size="sm"
-                            color={purchase.skill.github_url ? "secondary" : "primary"}
-                            variant="flat"
-                            startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
-                            isLoading={downloadingId === purchase.skill.id}
-                            onPress={() => handleDownload(purchase.skill.id, purchase.skill.slug)}
-                            isDisabled={purchase.status !== 'completed'}
-                          >
-                            {downloadingId === purchase.skill.id ? 'Downloading...' : 'Download ZIP'}
-                          </Button>
+                          ) : (
+                            <span className="text-gray-400 text-sm">Pending invite</span>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -4,6 +4,7 @@ import { useCart } from "@/context/cart-context";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 interface PurchasedSkill {
   id: string;
@@ -72,6 +73,7 @@ export function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams?.get("session_id");
   const { clearCart } = useCart();
+  const { data: authSession } = useSession();
 
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +94,6 @@ export function SuccessContent() {
 
     async function fetchData() {
       try {
-        // Fetch session data and GitHub username in parallel
         const [sessionRes, githubRes] = await Promise.all([
           fetch(`/api/checkout/session?session_id=${sessionId}`),
           fetch('/api/user/github'),
@@ -102,14 +103,11 @@ export function SuccessContent() {
         const sessionData = await sessionRes.json();
         setSession(sessionData);
 
-        // Clear the cart after successful purchase
         clearCart();
 
-        // Check GitHub username
         if (githubRes.ok) {
           const githubData = await githubRes.json();
           setCurrentGithubUsername(githubData.github_username);
-          // Show GitHub form if user doesn't have a username set and purchased skills with repos
           if (!githubData.github_username && sessionData.skills?.length > 0) {
             setShowGithubForm(true);
           }
@@ -124,6 +122,15 @@ export function SuccessContent() {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
+
+  // Auto-fill GitHub username from OAuth session
+  useEffect(() => {
+    if (!authSession?.user) return;
+    const oauthUsername = (authSession.user as Record<string, unknown>)?.githubUsername as string | undefined;
+    if (oauthUsername && !githubUsername) {
+      setGithubUsername(oauthUsername);
+    }
+  }, [authSession, githubUsername]);
 
   // Handle GitHub username submission
   const handleGithubSubmit = useCallback(async (e: React.FormEvent) => {
@@ -209,11 +216,13 @@ export function SuccessContent() {
             You&apos;re in!
           </h1>
           <p className="font-mono text-sm text-white/50 leading-relaxed max-w-sm mx-auto">
-            Your skills are ready to download. Want source code access and updates? Add your GitHub username below.
+            {currentGithubUsername
+              ? "Your skills are ready. Check your email for GitHub repository invitations."
+              : "Your skills are ready. Add your GitHub username below to get access to the private repositories."}
           </p>
         </div>
 
-        {/* Purchased skills — download first */}
+        {/* Purchased skills */}
         {session?.skills && session.skills.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
@@ -242,30 +251,32 @@ export function SuccessContent() {
                       ${(skill.price_cents / 100).toFixed(2)} {skill.currency.toUpperCase()}
                     </p>
                   </div>
-                  <a
-                    href={`/api/downloads/${skill.id}`}
-                    className="text-xs font-mono text-[#FF4D4D] hover:text-[#FF4D4D]/80 transition-colors shrink-0 px-3 py-1 rounded-md bg-[#FF4D4D]/10 hover:bg-[#FF4D4D]/20"
-                  >
-                    Download
-                  </a>
+                  {currentGithubUsername ? (
+                    <span className="text-xs font-mono text-emerald-400/70 shrink-0 px-3 py-1 rounded-md bg-emerald-500/10">
+                      Invite sent
+                    </span>
+                  ) : (
+                    <span className="text-xs font-mono text-white/30 shrink-0 px-3 py-1 rounded-md bg-white/5">
+                      Pending
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        {/* GitHub — optional enhancement */}
+        {/* GitHub — connect to get repo access */}
         {showGithubForm && (
           <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-6 space-y-4">
             <div className="flex items-center gap-3">
               <GitHubIcon />
               <h2 className="font-mono text-lg font-semibold text-white">
-                Want repo access too? <span className="text-white/40 text-sm font-normal">(optional)</span>
+                Get your repo access
               </h2>
             </div>
             <p className="font-mono text-sm text-white/60 leading-relaxed">
-              Add your GitHub username to also get invited to the private repositories — 
-              source code, issues, and automatic updates.
+              We&apos;ll invite you to the private repositories — source code, issues, and automatic updates.
             </p>
             
             <form onSubmit={handleGithubSubmit} className="space-y-3">
@@ -296,19 +307,25 @@ export function SuccessContent() {
         )}
 
         {currentGithubUsername && !showGithubForm && (
-          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4">
+          <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4">
             <div className="flex items-center gap-3">
               <GitHubIcon />
               <div>
                 <p className="font-mono text-sm text-white">
-                  GitHub: <span className="text-emerald-400">{currentGithubUsername}</span>
+                  GitHub: <span className="text-emerald-400">@{currentGithubUsername}</span>
                 </p>
                 <p className="font-mono text-xs text-white/40">
-                  Check your email for repository invitations
+                  Repository invitations sent — check your email or GitHub notifications
                 </p>
               </div>
             </div>
           </div>
+        )}
+
+        {githubMessage && currentGithubUsername && !showGithubForm && (
+          <p className="font-mono text-xs text-emerald-400 text-center">
+            {githubMessage}
+          </p>
         )}
 
         {/* Installation Guide */}
@@ -316,72 +333,54 @@ export function SuccessContent() {
           <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
             Get Your Skills Installed (30 Seconds)
           </h2>
-          
-          {/* Direct Download Method — always primary */}
+
           <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 bg-[#FF4D4D] rounded-full flex items-center justify-center text-white text-xs font-bold">
                 1
               </div>
               <h3 className="font-mono text-sm font-semibold text-white">
-                Download &amp; Install
+                Accept GitHub Invitation
               </h3>
             </div>
             
             <div className="pl-9 space-y-3">
               <ol className="font-mono text-xs text-white/60 space-y-1 list-decimal">
-                <li>Click &quot;Download&quot; on each skill above</li>
-                <li>Extract the .skill files</li>
-                <li>Copy SKILL.md files to your agent&apos;s skills/ folder</li>
+                <li>Check your email for the GitHub repository invitation</li>
+                <li>Accept the invitation to get access</li>
+                <li>Clone the repo or download the files</li>
+              </ol>
+            </div>
+          </div>
+
+          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-[#FF4D4D] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                2
+              </div>
+              <h3 className="font-mono text-sm font-semibold text-white">
+                Install the Skill
+              </h3>
+            </div>
+            
+            <div className="pl-9 space-y-3">
+              <ol className="font-mono text-xs text-white/60 space-y-1 list-decimal">
+                <li>Copy SKILL.md + scripts to your agent&apos;s skills/ folder</li>
                 <li>Restart your agent</li>
+                <li>The skill is auto-detected on next run</li>
               </ol>
               
               <div className="relative">
                 <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed overflow-x-auto pr-16">
                   <code>
-                    # Quick install command:{"\n"}
-                    cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/
+                    # Quick install from cloned repo:{"\n"}
+                    cp -r ./skill-name/ ~/your-agent/skills/
                   </code>
                 </pre>
-                <CopyButton text="cp ~/Downloads/*.skill/SKILL.md ~/your-agent/skills/" />
+                <CopyButton text="cp -r ./skill-name/ ~/your-agent/skills/" />
               </div>
             </div>
           </div>
-
-          {/* GitHub Method — shown if user connected GitHub */}
-          {currentGithubUsername && session?.skills?.some(s => s.id) && (
-            <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-4 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  2
-                </div>
-                <h3 className="font-mono text-sm font-semibold text-white">
-                  GitHub Repository Access
-                </h3>
-              </div>
-              
-              <div className="pl-9 space-y-3">
-                <div className="space-y-2">
-                  <p className="font-mono text-sm text-emerald-400 flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                    </svg>
-                    Invitations sent to @{currentGithubUsername}
-                  </p>
-                  <ol className="font-mono text-xs text-white/60 space-y-1 pl-4 list-decimal">
-                    <li>Check your email for GitHub repository invitations</li>
-                    <li>Accept the invitations (one per skill purchased)</li>
-                    <li>Visit each repository for source code and updates</li>
-                  </ol>
-                </div>
-                
-                <div className="flex gap-2 text-xs">
-                  <span className="text-white/40">⭐ Bonus:</span>
-                  <span className="text-white/60">Source code • File issues • Auto-updates • Community support</span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Need Help */}
           <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">

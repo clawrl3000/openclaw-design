@@ -536,6 +536,32 @@ export const SKILLS: Skill[] = [
     stripePriceId: "price_1T1AzVA1Q0bjxXUQhUtgbTt6",
     githubRepo: "openclaw-design/app-forge",
   },
+  {
+    slug: "test-skill",
+    name: "Test Skill - Hello World",
+    tagline: "A test skill for verifying marketplace delivery. Do not purchase.",
+    price: "$5",
+    priceNum: 5,
+    category: "Agent Core",
+    rating: 5.0,
+    reviewCount: 0,
+    description:
+      "This is a minimal test skill used to verify the end-to-end purchase and GitHub delivery flow. It confirms that Stripe checkout, GitHub collaborator invites, and skill downloads all work correctly. Do not purchase unless you are testing the marketplace.",
+    includes: [
+      "SKILL.md — minimal test skill definition",
+      "README.md — installation instructions",
+    ],
+    features: [
+      "Verifies marketplace delivery pipeline",
+      "Tests GitHub collaborator invite flow",
+      "Confirms Stripe webhook integration",
+    ],
+    version: "1.0.0",
+    compatibility: "OpenClaw v2.0+",
+    stripeProductId: "prod_U1Prgg31DxfQH8",
+    stripePriceId: "price_1T3N1IA1Q0bjxXUQvW4HAcG4",
+    githubRepo: "openclaw-design/test-skill",
+  },
 ];
 
 /** Look up a skill by slug */

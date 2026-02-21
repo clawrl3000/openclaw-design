@@ -5,6 +5,51 @@ import { purchases, skills, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { inviteCollaborator, checkRepoExists } from "@/lib/github";
 
+async function notifyPurchase(details: {
+  email: string | null;
+  githubUsername: string | null;
+  skills: string[];
+  totalCents: number;
+  currency: string;
+  inviteStatuses: Record<string, string>;
+}) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_NOTIFY_CHAT_ID;
+  if (!botToken || !chatId) return;
+
+  const skillList = details.skills.map(s => {
+    const status = details.inviteStatuses[s];
+    const icon = status === 'sent' ? '✅' : status === 'failed' ? '❌' : '⏳';
+    return `  ${icon} ${s}`;
+  }).join('\n');
+
+  const total = `$${(details.totalCents / 100).toFixed(2)} ${details.currency}`;
+  const text = [
+    `🛒 *New Purchase!*`,
+    ``,
+    `*Customer:* ${details.email || 'unknown'}`,
+    `*GitHub:* ${details.githubUsername ? `@${details.githubUsername}` : 'not set'}`,
+    `*Total:* ${total}`,
+    ``,
+    `*Skills:*`,
+    skillList,
+  ].join('\n');
+
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'Markdown',
+      }),
+    });
+  } catch (err) {
+    console.error('[Webhook] Failed to send Telegram notification:', err);
+  }
+}
+
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!);
 }
@@ -142,6 +187,30 @@ export async function POST(req: NextRequest) {
           .set({ stripe_customer_id: session.customer })
           .where(eq(users.id, userId));
       }
+
+      // Send purchase notification
+      const purchasedSkillNames: string[] = [];
+      const inviteStatuses: Record<string, string> = {};
+      for (const skillId of skillIds) {
+        const [s] = await db.select().from(skills).where(eq(skills.id, skillId)).limit(1);
+        if (s) {
+          purchasedSkillNames.push(s.name);
+          // Look up the invite status from the purchase we just created
+          const [p] = await db.select().from(purchases)
+            .where(eq(purchases.stripe_payment_intent_id, paymentIntentId))
+            .limit(1);
+          inviteStatuses[s.name] = p?.github_invite_status || 'not_sent';
+        }
+      }
+
+      await notifyPurchase({
+        email: session.customer_email || user?.email || null,
+        githubUsername: user?.github_username || null,
+        skills: purchasedSkillNames,
+        totalCents: session.amount_total || 0,
+        currency: (session.currency || 'usd').toUpperCase(),
+        inviteStatuses,
+      });
 
       console.log(`[Webhook] Purchase processing completed for session ${session.id}`);
     } catch (error) {
