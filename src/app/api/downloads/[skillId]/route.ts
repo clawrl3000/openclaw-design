@@ -2,35 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { db } from "@/db";
-import { purchases, skills, skill_versions } from "@/db/schema";
+import { purchases, skills } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+
+const GITHUB_OWNER = "openclaw-design";
 
 /**
  * GET /api/downloads/[skillId]
- * Download a purchased skill bundle (SKILL.md + assets)
+ * Download a purchased skill as a ZIP.
+ * Verifies purchase via session, fetches from GitHub with server-side PAT.
+ * Buyer needs no git auth — just clicks the download button.
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ skillId: string }> }
 ) {
   try {
-    // Get the authenticated user session
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Authentication required" },
+        { error: "Authentication required. Please sign in first." },
         { status: 401 }
       );
     }
 
     const { skillId } = await params;
 
-    // Check if the user has purchased this skill
+    // Verify purchase
     const [purchase] = await db
-      .select({
-        purchase: purchases,
-        skill: skills,
-      })
+      .select({ purchase: purchases, skill: skills })
       .from(purchases)
       .innerJoin(skills, eq(purchases.skill_id, skills.id))
       .where(
@@ -44,45 +44,61 @@ export async function GET(
 
     if (!purchase) {
       return NextResponse.json(
-        { error: "You have not purchased this skill or the purchase is not complete" },
+        { error: "Purchase not found" },
         { status: 403 }
       );
     }
 
-    // Get the latest version of the skill
-    const [latestVersion] = await db
-      .select()
-      .from(skill_versions)
-      .where(eq(skill_versions.skill_id, skillId))
-      .orderBy(skill_versions.created_at)
-      .limit(1);
-
-    if (!latestVersion || !latestVersion.bundle_url) {
+    const repoName = purchase.skill.github_repo;
+    if (!repoName) {
       return NextResponse.json(
-        { error: "Skill bundle not available" },
+        { error: "Download not available for this skill yet" },
         { status: 404 }
       );
     }
 
-    // If the bundle_url is a local file path, serve the file directly
-    if (latestVersion.bundle_url.startsWith("/") || latestVersion.bundle_url.startsWith("file://")) {
-      // For development, we'll return the bundle URL for now
-      // In production, you'd want to stream the file content
-      return NextResponse.json({
-        skill: purchase.skill,
-        version: latestVersion,
-        downloadUrl: latestVersion.bundle_url,
-        message: "File ready for download"
-      });
+    const githubPat = process.env.GITHUB_PAT;
+    if (!githubPat) {
+      console.error("[Download] GITHUB_PAT not configured");
+      return NextResponse.json(
+        { error: "Download service error" },
+        { status: 500 }
+      );
     }
 
-    // If it's a URL, redirect to it
-    return NextResponse.redirect(latestVersion.bundle_url);
+    // Fetch repo zip from GitHub
+    const zipUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${repoName}/zipball/main`;
+    const ghResponse = await fetch(zipUrl, {
+      headers: {
+        Authorization: `token ${githubPat}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+      redirect: "follow",
+    });
 
+    if (!ghResponse.ok) {
+      console.error(`[Download] GitHub error: ${ghResponse.status} for ${repoName}`);
+      return NextResponse.json(
+        { error: "Failed to fetch skill files from repository" },
+        { status: 502 }
+      );
+    }
+
+    const zipBuffer = await ghResponse.arrayBuffer();
+    const filename = `${purchase.skill.slug}.zip`;
+
+    return new NextResponse(zipBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": zipBuffer.byteLength.toString(),
+      },
+    });
   } catch (error) {
-    console.error("Download error:", error);
+    console.error("[Download] Error:", error);
     return NextResponse.json(
-      { error: "Failed to process download" },
+      { error: "Download failed" },
       { status: 500 }
     );
   }

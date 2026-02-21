@@ -12,6 +12,7 @@ interface PurchasedSkill {
   slug: string;
   price_cents: number;
   currency: string;
+  github_repo: string | null;
 }
 
 interface SessionData {
@@ -62,12 +63,14 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-3 right-3 text-xs font-mono px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors"
+      className="mt-2 text-xs font-mono px-3 py-1.5 rounded-md bg-[#FF4D4D]/10 hover:bg-[#FF4D4D]/20 text-[#FF4D4D] hover:text-[#FF4D4D]/80 transition-colors border border-[#FF4D4D]/20"
     >
-      {copied ? "Copied!" : "Copy"}
+      {copied ? "✓ Copied!" : "📋 Copy to clipboard"}
     </button>
   );
 }
+
+const GITHUB_OWNER = "openclaw-design";
 
 export function SuccessContent() {
   const searchParams = useSearchParams();
@@ -78,13 +81,12 @@ export function SuccessContent() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [githubUsername, setGithubUsername] = useState<string>("");
-  const [currentGithubUsername, setCurrentGithubUsername] = useState<string | null>(null);
-  const [showGithubForm, setShowGithubForm] = useState(false);
-  const [githubLoading, setGithubLoading] = useState(false);
-  const [githubMessage, setGithubMessage] = useState<string | null>(null);
+  const [inviteStatus, setInviteStatus] = useState<"loading" | "sent" | "failed" | "no_repo">("loading");
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
 
-  // Fetch session data, GitHub username, and clear the cart
+  const githubUsername = (authSession?.user as Record<string, unknown>)?.githubUsername as string | undefined;
+
+  // Fetch session data and clear the cart
   useEffect(() => {
     if (!sessionId) {
       setError("No session ID found");
@@ -94,24 +96,11 @@ export function SuccessContent() {
 
     async function fetchData() {
       try {
-        const [sessionRes, githubRes] = await Promise.all([
-          fetch(`/api/checkout/session?session_id=${sessionId}`),
-          fetch('/api/user/github'),
-        ]);
-
+        const sessionRes = await fetch(`/api/checkout/session?session_id=${sessionId}`);
         if (!sessionRes.ok) throw new Error("Failed to load session");
         const sessionData = await sessionRes.json();
         setSession(sessionData);
-
         clearCart();
-
-        if (githubRes.ok) {
-          const githubData = await githubRes.json();
-          setCurrentGithubUsername(githubData.github_username);
-          if (!githubData.github_username && sessionData.skills?.length > 0) {
-            setShowGithubForm(true);
-          }
-        }
       } catch {
         setError("Could not load purchase details. Your purchase was still successful — check your email for repo invitations.");
       } finally {
@@ -123,49 +112,49 @@ export function SuccessContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // Auto-fill GitHub username from OAuth session
+  // Auto-send GitHub invites once we have the session data and GitHub username
   useEffect(() => {
-    if (!authSession?.user) return;
-    const oauthUsername = (authSession.user as Record<string, unknown>)?.githubUsername as string | undefined;
-    if (oauthUsername && !githubUsername) {
-      setGithubUsername(oauthUsername);
+    if (!session || !githubUsername) return;
+
+    const skillsWithRepos = session.skills.filter(s => s.github_repo);
+    if (skillsWithRepos.length === 0) {
+      setInviteStatus("no_repo");
+      return;
     }
-  }, [authSession, githubUsername]);
 
-  // Handle GitHub username submission
-  const handleGithubSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!githubUsername.trim()) return;
+    async function sendInvites() {
+      try {
+        const res = await fetch('/api/user/github', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ github_username: githubUsername }),
+        });
 
-    setGithubLoading(true);
-    setGithubMessage(null);
-
-    try {
-      const res = await fetch('/api/user/github', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ github_username: githubUsername }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to update GitHub username');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.invitations_sent > 0) {
+            setInviteStatus("sent");
+            setInviteMessage(`Repository access sent to @${githubUsername}`);
+          } else if (data.invitations_failed > 0) {
+            setInviteStatus("failed");
+            setInviteMessage("Failed to send some invitations. Check the dashboard for details.");
+          } else {
+            // Already invited or no repos to invite to
+            setInviteStatus("sent");
+            setInviteMessage(`You already have access as @${githubUsername}`);
+          }
+        } else {
+          setInviteStatus("failed");
+          setInviteMessage("Failed to send invitations. Visit your dashboard to retry.");
+        }
+      } catch {
+        setInviteStatus("failed");
+        setInviteMessage("Failed to send invitations. Visit your dashboard to retry.");
       }
-
-      const data = await res.json();
-      setCurrentGithubUsername(githubUsername);
-      setShowGithubForm(false);
-      setGithubMessage(
-        `GitHub username updated! ${data.invitations_sent} repo invitations sent successfully.`
-      );
-    } catch (error) {
-      setGithubMessage(
-        error instanceof Error ? error.message : 'Failed to update GitHub username'
-      );
-    } finally {
-      setGithubLoading(false);
     }
-  }, [githubUsername]);
+
+    sendInvites();
+  }, [session, githubUsername]);
 
   if (loading) {
     return (
@@ -204,6 +193,8 @@ export function SuccessContent() {
     );
   }
 
+  const skillsWithRepos = session?.skills.filter(s => s.github_repo) || [];
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6 py-16">
       <div className="max-w-lg w-full space-y-8">
@@ -216,11 +207,45 @@ export function SuccessContent() {
             You&apos;re in!
           </h1>
           <p className="font-mono text-sm text-white/50 leading-relaxed max-w-sm mx-auto">
-            {currentGithubUsername
-              ? "Your skills are ready. Check your email for GitHub repository invitations."
-              : "Your skills are ready. Add your GitHub username below to get access to the private repositories."}
+            {inviteStatus === "sent"
+              ? "Your skills are ready. Repository invitations have been sent automatically."
+              : "Your skills are ready. Setting up your repository access…"}
           </p>
         </div>
+
+        {/* GitHub status */}
+        {githubUsername && (
+          <div className={`rounded-xl p-4 ${
+            inviteStatus === "sent" 
+              ? "bg-emerald-500/5 border border-emerald-500/20" 
+              : inviteStatus === "failed"
+              ? "bg-red-500/5 border border-red-500/20"
+              : "bg-white/5 border border-white/10"
+          }`}>
+            <div className="flex items-center gap-3">
+              <GitHubIcon />
+              <div>
+                <p className="font-mono text-sm text-white">
+                  Signed in as <span className={inviteStatus === "sent" ? "text-emerald-400" : "text-white/70"}>@{githubUsername}</span>
+                </p>
+                {inviteMessage && (
+                  <p className={`font-mono text-xs mt-1 ${
+                    inviteStatus === "sent" ? "text-emerald-400/70" 
+                    : inviteStatus === "failed" ? "text-red-400/70"
+                    : "text-white/40"
+                  }`}>
+                    {inviteMessage}
+                  </p>
+                )}
+                {inviteStatus === "loading" && (
+                  <p className="font-mono text-xs text-white/40 mt-1">
+                    Sending repository invitations…
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Purchased skills */}
         {session?.skills && session.skills.length > 0 && (
@@ -251,9 +276,13 @@ export function SuccessContent() {
                       ${(skill.price_cents / 100).toFixed(2)} {skill.currency.toUpperCase()}
                     </p>
                   </div>
-                  {currentGithubUsername ? (
+                  {inviteStatus === "sent" && skill.github_repo ? (
                     <span className="text-xs font-mono text-emerald-400/70 shrink-0 px-3 py-1 rounded-md bg-emerald-500/10">
-                      Invite sent
+                      ✓ Invited
+                    </span>
+                  ) : inviteStatus === "loading" ? (
+                    <span className="text-xs font-mono text-white/30 shrink-0 px-3 py-1 rounded-md bg-white/5 animate-pulse">
+                      Sending…
                     </span>
                   ) : (
                     <span className="text-xs font-mono text-white/30 shrink-0 px-3 py-1 rounded-md bg-white/5">
@@ -266,127 +295,112 @@ export function SuccessContent() {
           </div>
         )}
 
-        {/* GitHub — connect to get repo access */}
-        {showGithubForm && (
-          <div className="rounded-xl bg-[#1E1510] border border-[#2D221C] p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <GitHubIcon />
-              <h2 className="font-mono text-lg font-semibold text-white">
-                Get your repo access
-              </h2>
-            </div>
-            <p className="font-mono text-sm text-white/60 leading-relaxed">
-              We&apos;ll invite you to the private repositories — source code, issues, and automatic updates.
-            </p>
-            
-            <form onSubmit={handleGithubSubmit} className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="github-username"
-                  value={githubUsername}
-                  onChange={(e) => setGithubUsername(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-[#0A0604] border border-[#2D221C] rounded-lg text-white font-mono text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FF4D4D]/50"
-                  disabled={githubLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={githubLoading || !githubUsername.trim()}
-                  className="px-4 py-2 bg-[#FF4D4D] hover:bg-[#FF4D4D]/80 disabled:bg-[#FF4D4D]/30 text-white font-mono text-sm rounded-lg transition-colors"
-                >
-                  {githubLoading ? "Sending..." : "Send invites"}
-                </button>
-              </div>
-              {githubMessage && (
-                <p className="font-mono text-xs text-emerald-400 mt-2">
-                  {githubMessage}
-                </p>
-              )}
-            </form>
-          </div>
-        )}
-
-        {currentGithubUsername && !showGithubForm && (
-          <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4">
-            <div className="flex items-center gap-3">
-              <GitHubIcon />
-              <div>
-                <p className="font-mono text-sm text-white">
-                  GitHub: <span className="text-emerald-400">@{currentGithubUsername}</span>
-                </p>
-                <p className="font-mono text-xs text-white/40">
-                  Repository invitations sent — check your email or GitHub notifications
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {githubMessage && currentGithubUsername && !showGithubForm && (
-          <p className="font-mono text-xs text-emerald-400 text-center">
-            {githubMessage}
-          </p>
-        )}
-
         {/* Installation Guide */}
         <div className="space-y-4">
           <h2 className="font-mono text-xs text-white/30 uppercase tracking-wider">
-            Get Your Skills Installed (30 Seconds)
+            Install Your Skills
           </h2>
 
-          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-[#FF4D4D] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                1
-              </div>
-              <h3 className="font-mono text-sm font-semibold text-white">
-                Accept GitHub Invitation
-              </h3>
-            </div>
-            
-            <div className="pl-9 space-y-3">
-              <ol className="font-mono text-xs text-white/60 space-y-1 list-decimal">
-                <li>Check your email for the GitHub repository invitation</li>
-                <li>Accept the invitation to get access</li>
-                <li>Clone the repo or download the files</li>
-              </ol>
-            </div>
-          </div>
+          {session?.skills && session.skills.length > 0 ? (
+            session.skills.map((skill) => {
+              const cloneCmd = skill.github_repo
+                ? `git clone https://github.com/${GITHUB_OWNER}/${skill.github_repo}.git ~/openclaw/skills/${skill.slug}`
+                : null;
 
-          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 bg-[#FF4D4D] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                2
-              </div>
-              <h3 className="font-mono text-sm font-semibold text-white">
-                Install the Skill
-              </h3>
+              return (
+                <div
+                  key={skill.id}
+                  className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-5 space-y-4"
+                >
+                  <h3 className="font-mono text-sm font-semibold text-white">
+                    {skill.name}
+                  </h3>
+
+                  {/* Option 1: Git Clone (primary) */}
+                  {cloneCmd && (
+                    <div className="space-y-2">
+                      <p className="font-mono text-xs text-white/50">
+                        Paste in your terminal:
+                      </p>
+                      <div>
+                        <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed whitespace-pre-wrap break-all bg-black/30 rounded-lg p-3">
+                          <code>{cloneCmd}</code>
+                        </pre>
+                        <CopyButton text={cloneCmd} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  {cloneCmd && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-white/10" />
+                      <span className="font-mono text-[10px] text-white/20 uppercase">or</span>
+                      <div className="flex-1 h-px bg-white/10" />
+                    </div>
+                  )}
+
+                  {/* Option 2: Download ZIP */}
+                  <div className="space-y-2">
+                    <a
+                      href={`/api/downloads/${skill.id}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white font-mono text-xs transition-colors border border-white/10"
+                    >
+                      ⬇ Download ZIP
+                    </a>
+                    {!cloneCmd && (
+                      <p className="font-mono text-[10px] text-white/30">
+                        Unzip into ~/openclaw/skills/{skill.slug}/
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-5">
+              <p className="font-mono text-xs text-white/40">
+                Your download links will appear here once payment is confirmed.
+              </p>
             </div>
-            
-            <div className="pl-9 space-y-3">
-              <ol className="font-mono text-xs text-white/60 space-y-1 list-decimal">
-                <li>Copy SKILL.md + scripts to your agent&apos;s skills/ folder</li>
-                <li>Restart your agent</li>
-                <li>The skill is auto-detected on next run</li>
-              </ol>
-              
-              <div className="relative">
-                <pre className="font-mono text-xs text-emerald-400/80 leading-relaxed overflow-x-auto pr-16">
-                  <code>
-                    # Quick install from cloned repo:{"\n"}
-                    cp -r ./skill-name/ ~/your-agent/skills/
-                  </code>
-                </pre>
-                <CopyButton text="cp -r ./skill-name/ ~/your-agent/skills/" />
-              </div>
+          )}
+
+          {/* Accept invite reminder */}
+          {inviteStatus === "sent" && (
+            <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3">
+              <p className="font-mono text-xs text-amber-300 leading-relaxed">
+                ⚠️ <strong>First time?</strong> Accept the{" "}
+                <a
+                  href="https://github.com/notifications"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-amber-200"
+                >
+                  GitHub repo invitation
+                </a>{" "}
+                before cloning.
+              </p>
+            </div>
+          )}
+
+          {/* Restart note */}
+          <div className="rounded-xl bg-[#0A0604] border border-[#2D221C] p-4 space-y-2">
+            <p className="font-mono text-xs text-white/50">
+              Then restart your agent to load the new skill:
+            </p>
+            <div>
+              <pre className="font-mono text-xs text-emerald-400/80 bg-black/30 rounded-lg p-3">
+                <code>openclaw gateway restart</code>
+              </pre>
+              <CopyButton text="openclaw gateway restart" />
             </div>
           </div>
 
           {/* Need Help */}
           <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
             <p className="font-mono text-xs text-blue-300 leading-relaxed">
-              💡 <strong>Need help?</strong> Each skill repository has detailed setup instructions and troubleshooting. 
-              Can&apos;t find your agent&apos;s skills folder? Check your agent&apos;s documentation.
+              💡 <strong>Need help?</strong> Each skill repo has setup instructions in its README.
+              Join the <a href="https://discord.gg/openclaw" className="underline hover:text-blue-200">Discord</a> if you get stuck.
             </p>
           </div>
         </div>

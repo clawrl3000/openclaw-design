@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
           slug: skill.slug,
           price_cents: skill.price_cents,
           currency: skill.currency,
+          github_repo: skill.github_repo,
         });
       }
     }
