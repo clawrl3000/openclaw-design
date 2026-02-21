@@ -235,8 +235,37 @@ export function SuccessContent() {
               </h3>
             </div>
             <p className="font-mono text-xs text-white/50 pl-11">
-              We sent you a repo invitation. Click below to accept it — this page will update automatically.
+              We sent you a repo invitation. Click below to open GitHub, then accept the invite. This page updates automatically.
             </p>
+
+            {/* Visual mockup of what the GitHub notification looks like */}
+            <div className="pl-11">
+              <p className="font-mono text-[10px] text-white/25 uppercase tracking-wider mb-2">You&apos;ll see something like this:</p>
+              <div className="rounded-lg border border-[#30363d] bg-[#0d1117] p-3 space-y-2 max-w-sm">
+                <div className="flex items-start gap-2.5">
+                  <div className="mt-0.5 w-4 h-4 rounded-full bg-[#1f6feb] flex items-center justify-center shrink-0">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="white"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9z"/></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] text-[#c9d1d9] leading-tight">
+                      <span className="font-semibold text-[#58a6ff]">openclaw-design</span> invited you to collaborate on{" "}
+                      <span className="font-semibold text-[#58a6ff]">openclaw-design/{session?.skills?.[0]?.github_repo || "skill-name"}</span>
+                    </p>
+                    <p className="text-[10px] text-[#8b949e] mt-1">just now</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 pl-6">
+                  <div className="px-3 py-1 rounded-md bg-[#238636] text-white text-[10px] font-semibold cursor-default">
+                    Accept
+                  </div>
+                  <div className="px-3 py-1 rounded-md bg-[#21262d] border border-[#30363d] text-[#c9d1d9] text-[10px] font-semibold cursor-default">
+                    Decline
+                  </div>
+                </div>
+              </div>
+              <p className="font-mono text-[10px] text-white/20 mt-1.5">☝️ Click the green <strong>Accept</strong> button on GitHub</p>
+            </div>
+
             <div className="pl-11">
               <a
                 href="https://github.com/notifications"
