@@ -214,6 +214,69 @@ export function getRepoUrl(repoName: string): string {
 }
 
 /**
+ * Accept a repository invitation on behalf of the user using their OAuth token.
+ * Returns true if accepted, false if failed.
+ */
+export async function acceptInvitationForUser(
+  userAccessToken: string,
+  repoName: string
+): Promise<boolean> {
+  try {
+    // List the user's pending invitations
+    const listRes = await fetch(
+      `${GITHUB_API_BASE}/user/repository_invitations`,
+      {
+        headers: {
+          Authorization: `token ${userAccessToken}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'OpenClaw-Marketplace/1.0',
+        },
+      }
+    );
+
+    if (!listRes.ok) {
+      console.error(`[GitHub] Failed to list invitations for user: ${listRes.status}`);
+      return false;
+    }
+
+    const invitations = await listRes.json();
+    const invite = invitations.find(
+      (inv: { repository: { full_name: string }; id: number }) =>
+        inv.repository.full_name === `${GITHUB_OWNER}/${repoName}`
+    );
+
+    if (!invite) {
+      console.error(`[GitHub] No pending invitation found for ${GITHUB_OWNER}/${repoName}`);
+      return false;
+    }
+
+    // Accept the invitation
+    const acceptRes = await fetch(
+      `${GITHUB_API_BASE}/user/repository_invitations/${invite.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `token ${userAccessToken}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'OpenClaw-Marketplace/1.0',
+        },
+      }
+    );
+
+    if (acceptRes.status === 204) {
+      console.log(`[GitHub] Auto-accepted invite for ${GITHUB_OWNER}/${repoName}`);
+      return true;
+    } else {
+      console.error(`[GitHub] Failed to accept invite: ${acceptRes.status}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`[GitHub] Error auto-accepting invite:`, error);
+    return false;
+  }
+}
+
+/**
  * Validate if a GitHub username exists
  */
 export async function validateGitHubUsername(username: string): Promise<boolean> {

@@ -365,11 +365,11 @@ export function SuccessContent() {
             </div>
           )}
 
-          {/* Accept invite reminder */}
-          {inviteStatus === "sent" && (
+          {/* Accept invite reminder — only if auto-accept failed */}
+          {inviteStatus === "sent" && inviteMessage && !inviteMessage.includes("already have access") && (
             <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3">
               <p className="font-mono text-xs text-amber-300 leading-relaxed">
-                ⚠️ <strong>First time?</strong> Accept the{" "}
+                ⚠️ Accept the{" "}
                 <a
                   href="https://github.com/notifications"
                   target="_blank"
@@ -378,7 +378,7 @@ export function SuccessContent() {
                 >
                   GitHub repo invitation
                 </a>{" "}
-                before cloning.
+                before cloning. (You may need to re-sign in to grant repo access.)
               </p>
             </div>
           )}

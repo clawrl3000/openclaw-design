@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { db } from "@/db";
-import { users, purchases, skills } from "@/db/schema";
+import { users, purchases, skills, accounts } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { validateGitHubUsername, inviteCollaborator, checkRepoExists } from "@/lib/github";
+import { validateGitHubUsername, inviteCollaborator, checkRepoExists, acceptInvitationForUser } from "@/lib/github";
 
 /**
  * PUT /api/user/github
@@ -53,6 +53,20 @@ export async function PUT(req: NextRequest) {
       .set({ github_username })
       .where(eq(users.id, session.user.id));
 
+    // Fetch user's GitHub OAuth access token for auto-accepting invites
+    const [userAccount] = await db
+      .select({ access_token: accounts.access_token })
+      .from(accounts)
+      .where(
+        and(
+          eq(accounts.userId, session.user.id),
+          eq(accounts.provider, 'github')
+        )
+      )
+      .limit(1);
+
+    const userAccessToken = userAccount?.access_token;
+
     // Find all completed purchases for this user where GitHub invites haven't been sent
     const purchasesNeedingInvites = await db
       .select({
@@ -98,6 +112,14 @@ export async function PUT(req: NextRequest) {
           
           if (inviteResult.success) {
             githubInviteStatus = 'sent';
+
+            // Auto-accept the invite using the user's OAuth token
+            if (userAccessToken) {
+              const accepted = await acceptInvitationForUser(userAccessToken, skill.github_repo);
+              if (accepted) {
+                githubInviteStatus = 'accepted';
+              }
+            }
           } else {
             githubInviteStatus = 'failed';
             inviteError = inviteResult.error;
